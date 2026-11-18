@@ -92,6 +92,7 @@ function fillBeans() {
     const all = queryAll_(CFG.BEANS_DB);
     const todo = all.filter((pg) => {
       const pr = pg.properties;
+      if (!P.url(pr['상품 URL']) && isUrl_(P.text(pr['원두명']))) return true;   // 원두명 칸에 URL을 붙여넣은 경우
       return P.url(pr['상품 URL']) && (!P.sel(pr['국가']) || !P.text(pr['원두 번호']) || !P.url(pr['별점 링크']));
     });
     if (!todo.length) return;
@@ -106,14 +107,22 @@ function fillBeans() {
 
 function fillOne_(pg, all, radar) {
   const pr = pg.properties;
-  const url = P.url(pr['상품 URL']);
   const props = {};
+  let url = P.url(pr['상품 URL']);
+  let nameEmpty = !P.text(pr['원두명']);
+  // 원두명 칸에 URL을 붙여넣었으면 상품 URL 칸으로 옮기고, 원두명은 새로 채움
+  const titled = P.text(pr['원두명']).trim();
+  if (!url && isUrl_(titled)) {
+    url = titled;
+    props['상품 URL'] = W.url(url);
+    nameEmpty = true;
+  }
 
   // 원두 정보 (국가가 비어 있을 때만 — 손으로 고친 값은 덮어쓰지 않음)
   if (!P.sel(pr['국가'])) {
     const info = radar[handleOf_(url)] || shopifyInfo_(url);
     if (info) {
-      if (!P.text(pr['원두명']) && info.name) props['원두명'] = W.title(info.name);
+      if (nameEmpty && info.name) props['원두명'] = W.title(info.name);
       if (info.country) props['국가'] = W.sel(info.country);
       if (!P.text(pr['지역/생산자']) && info.origin) props['지역/생산자'] = W.text(info.origin);
       if (info.varieties.length) props['품종'] = W.multi(info.varieties);
@@ -209,6 +218,8 @@ function shopifyInfo_(url) {
     return null;
   }
 }
+
+function isUrl_(s) { return /^https?:\/\/\S+$/i.test(String(s || '').trim()); }
 
 function handleOf_(url) {
   const m = String(url || '').match(/\/products\/([^/?#]+)/);
