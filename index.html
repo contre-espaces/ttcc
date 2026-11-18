@@ -3,12 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>TTCC — The Thursday Cupping Club</title>
+<title>TTCC · The Thursday Cupping Club</title>
 <meta name="description" content="세 명이 한 봉을 나눠 마시고, 점수를 남깁니다.">
-<meta property="og:title" content="TTCC — The Thursday Cupping Club">
+<meta property="og:title" content="TTCC · The Thursday Cupping Club">
 <meta property="og:description" content="이번 DROP 별점 남기러 가기">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://ttcc.inbeom.com/">
+<meta property="og:image" content="https://ttcc.inbeom.com/share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317171c'/%3E%3Ccircle cx='46' cy='44' r='6' fill='%23ff7759'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,7 +22,8 @@
   :root {
     --ink: #212121; --primary: #17171c; --muted: #616161; --slate: #75758a; --hair: #d9d9dd; --soft: #f2f2f2;
     --stone: #eeece7; --green: #003c33; --coral: #ff7759; --coral-soft: #ffad9b; --coral-ink: #b33f24; --coral-bg: #fff6f3;
-    --ok: #1d6b3a; --err: #b30000; --focus: #4c6ee6;
+    --ok: #1d6b3a; --err: #b30000; --focus: #1863dc;
+    --ease: cubic-bezier(.2,.8,.2,1); --ease-enter: cubic-bezier(.22,1,.36,1);
     --display: 'Space Grotesk', 'Noto Sans KR', sans-serif;
     --body: Inter, 'Noto Sans KR', system-ui, sans-serif;
     --mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -31,19 +36,21 @@
   input::placeholder { color: #93939f; }
   a { color: var(--ink); }
   :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .skip { position: absolute; left: 12px; top: -60px; z-index: 10; padding: 12px 16px; min-height: 44px; box-sizing: border-box; border-radius: 30px; background: var(--primary); color: #fff; font-size: 13px; text-decoration: none; }
+  .skip:focus { top: 8px; }
   .wrap { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
   .mono { font-family: var(--mono); letter-spacing: 0.28px; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
   nav { height: 56px; padding: 0 16px 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--soft); background: #fff; position: sticky; top: 0; z-index: 5; }
-  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .brand { display: flex; align-items: center; gap: 10px; min-height: 44px; text-decoration: none; }
   .logo { font-family: 'Google Sans', var(--display); font-weight: 500; font-size: 24px; line-height: 1; letter-spacing: -0.8px; color: var(--primary); }
   .logo i { font-style: normal; color: var(--coral); }
   .bar { width: 1px; height: 24px; background: var(--hair); }
   .brand-txt { display: flex; flex-direction: column; gap: 1px; }
   .brand-txt b { font: 400 15px/1.1 var(--display); letter-spacing: -0.2px; }
   .brand-txt span { font-size: 10px; color: var(--slate); }
-  .me-btn { height: 36px; padding: 0 14px; border-radius: 30px; border: 1px solid var(--primary); background: transparent; font-size: 13px; font-weight: 500; }
+  .me-btn { height: 44px; padding: 0 14px; border-radius: 30px; border: 1px solid var(--primary); background: transparent; font-size: 13px; font-weight: 500; }
 
   .card-stone { margin: 12px 12px 0; padding: 20px; border-radius: 8px; background: var(--stone); display: flex; flex-direction: column; gap: 12px; }
   .card-stone h2 { margin: 0; font-size: 16px; font-weight: 500; }
@@ -61,12 +68,12 @@
   .track { height: 4px; border-radius: 9999px; background: rgba(255,255,255,0.18); overflow: hidden; }
   .track i { display: block; height: 100%; border-radius: 9999px; background: var(--coral); width: 0; transition: width .3s; }
   .drops { display: flex; flex-wrap: wrap; gap: 6px; }
-  .drops button { height: 32px; padding: 0 12px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.35); background: transparent; color: #fff; font-size: 12px; font-family: var(--mono); }
+  .drops button { height: 44px; min-width: 52px; padding: 0 12px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.35); background: transparent; color: #fff; font-size: 12px; font-family: var(--mono); }
   .drops button[aria-pressed="true"] { background: #fff; color: var(--green); border-color: #fff; }
 
-  .tabs { margin: 20px 16px 4px; display: flex; gap: 8px; }
-  .tabs button { height: 36px; padding: 0 16px; border-radius: 30px; font-size: 13px; font-weight: 500; border: 1px solid var(--hair); background: transparent; color: var(--muted); }
-  .tabs button[aria-selected="true"] { border-color: var(--primary); background: var(--primary); color: #fff; }
+  .sec-h { margin: 28px 20px 4px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .sec-h h2 { margin: 0; font: 400 22px/1.2 var(--display); letter-spacing: -0.3px; }
+  .sec-h span { font-size: 12px; color: var(--slate); }
 
   .list { padding: 8px 16px 16px; display: flex; flex-direction: column; }
   .bean { border-top: 1px solid var(--hair); scroll-margin-top: 64px; }
@@ -98,7 +105,8 @@
   .scores .nt { font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
   .note { display: flex; gap: 8px; }
   .note input { flex: 1; min-width: 0; height: 44px; padding: 0 12px; border-radius: 4px; border: 1px solid var(--hair); background: #fff; color: var(--ink); font-size: 16px; }
-  .note input:focus { border-color: #9b60aa; outline: none; }
+  .note input { transition: border-color 140ms var(--ease), box-shadow 140ms var(--ease); }
+  .note input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(23,23,28,.12); outline: none; }
   .note button, .btn { height: 44px; padding: 0 18px; border-radius: 32px; border: 0; background: var(--primary); color: #fff; font-size: 13px; font-weight: 500; }
   .note button:disabled { opacity: .5; cursor: default; }
 
@@ -115,11 +123,36 @@
   footer { margin-top: auto; padding: 20px; border-top: 1px solid var(--soft); display: flex; align-items: center; justify-content: space-between; }
   footer .f-logo { font-size: 16px; letter-spacing: -0.4px; }
   footer small { font-size: 12px; color: var(--slate); }
+  /* motion: hover only for a fine pointer, press for everyone */
+  .pick button, .me-btn, .drops button, .st, .note button, .stars button, .row { transition: background-color 150ms var(--ease), color 150ms var(--ease), border-color 150ms var(--ease), transform 150ms var(--ease); }
+  .pick button:active, .me-btn:active, .drops button:active, .note button:active { transform: translateY(1px) scale(.985); transition-duration: 90ms; }
+  .stars button:active { transform: scale(.92); transition-duration: 90ms; }
+  @media (hover: hover) and (pointer: fine) {
+    .pick button:hover, .me-btn:hover { transform: translateY(-1px); background: #f4f4f5; }
+    .pick button[aria-checked="true"]:hover, .note button:hover { transform: translateY(-1px); background: #2e2e36; }
+    .drops button:hover { transform: translateY(-1px); border-color: #fff; }
+    .row:hover .nm { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+    .row:hover .st:not(.done) { background: var(--primary); color: #fff; }
+    .stars button:hover { color: var(--coral-soft); }
+    .stars button.on:hover { color: var(--coral); }
+  }
+  /* entrance: once on load */
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  @keyframes mask { from { transform: translateY(105%); } to { transform: none; } }
+  .drop h1 { overflow: hidden; }
+  .drop h1 > span { display: inline-block; }
+  html.m-enter:not(.m-enter-done) .drop h1 > span, html.m-enter .drop h1.in > span { animation: mask 700ms var(--ease-enter) both; }
+  html.m-enter .drop .mine, html.m-enter .drop .track, html.m-enter .drop .lbl { animation: rise 520ms var(--ease-enter) 180ms both; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition-property: color, background-color, border-color, opacity !important; }
+  }
   [hidden] { display: none !important; }
 </style>
+<script>document.documentElement.classList.add('m-enter');setTimeout(function(){document.documentElement.classList.add('m-enter-done')},900)</script>
 </head>
 <body>
 <div class="wrap">
+  <a class="skip" href="#viewDrop">원두 목록으로 바로 가기</a>
   <nav>
     <a class="brand" href="#" aria-label="TTCC 처음으로">
       <span class="logo" aria-hidden="true">TTCC<i>.</i></span>
@@ -141,7 +174,7 @@
     <div class="drop-top">
       <div>
         <div class="lbl mono" id="dropLbl">LATEST DROP</div>
-        <h1 id="dropTitle">Drop</h1>
+        <h1><span id="dropTitle">Drop</span></h1>
       </div>
       <div class="mine" id="mine">내 평가<b id="mineN">0/0</b></div>
     </div>
@@ -149,14 +182,17 @@
     <div class="drops" id="drops" aria-label="DROP 고르기"></div>
   </section>
 
-  <div class="tabs" role="tablist" aria-label="보기">
-    <button type="button" role="tab" id="tabDrop" aria-selected="true" aria-controls="viewDrop">이번 DROP</button>
-    <button type="button" role="tab" id="tabHall" aria-selected="false" aria-controls="viewHall">Hall of Fame</button>
-  </div>
   <div class="status" id="status" role="status" aria-live="polite"></div>
-
-  <section class="list" id="viewDrop" role="tabpanel" aria-labelledby="tabDrop"></section>
-  <section class="list" id="viewHall" role="tabpanel" aria-labelledby="tabHall" hidden></section>
+  <main>
+    <section aria-labelledby="hLine">
+      <div class="sec-h"><h2 id="hLine">Line-up</h2><span id="lineCount"></span></div>
+      <div class="list" id="viewDrop"></div>
+    </section>
+    <section aria-labelledby="hHall">
+      <div class="sec-h"><h2 id="hHall">Hall of Fame</h2><span>2명 이상 평가 · 평균 순</span></div>
+      <div class="list" id="viewHall"></div>
+    </section>
+  </main>
 
   <footer>
     <span class="logo f-logo" aria-label="TTCC">TTCC<i>.</i></span>
@@ -254,11 +290,7 @@
       $('#drops').innerHTML = drops().map((x) => `<button type="button" aria-pressed="${x === d}" data-drop="${x}">${pad(x)}</button>`).join('');
     }
 
-    // 탭
-    $('#tabDrop').setAttribute('aria-selected', S.tab === 'drop');
-    $('#tabHall').setAttribute('aria-selected', S.tab === 'hall');
-    $('#viewDrop').hidden = S.tab !== 'drop';
-    $('#viewHall').hidden = S.tab !== 'hall';
+    $('#lineCount').textContent = list.length ? list.length + '봉' : '';
 
     renderDrop(list);
     renderHall();
@@ -308,7 +340,7 @@
                   <button type="button" data-note="${b.id}" ${S.busy[b.id] ? 'disabled' : ''}>저장</button>
                 </span>
               </label>`
-            : `<div class="cap">블라인드 커핑 — 내 점수를 남기면 다른 멤버 점수가 열려요. (${others}명 평가함)</div>`}`}
+            : `<div class="cap">블라인드 커핑: 내 점수를 남기면 다른 멤버 점수가 열려요. (${others}명 평가함)</div>`}`}
         </div>`;
       }
       return `<article class="bean" id="b-${b.id}">
@@ -328,13 +360,20 @@
       .map((b) => ({ b, avg: avgOf(b) }))
       .sort((x, y) => y.avg - x.avg || Object.keys(y.b.ratings).length - Object.keys(x.b.ratings).length)
       .slice(0, 10);
-    el.innerHTML = '<div class="cap" style="padding:4px 4px 12px">2명 이상 평가한 원두 · 평균 점수 순</div>' + (ranked.length
+    el.innerHTML = (ranked.length
       ? ranked.map((x, i) => `<div class="hall-row">
           <span class="rk mono">${i + 1}</span>
           <span class="tx"><span class="nm">${esc(x.b.name)}</span><span class="mt">DROP ${pad(x.b.drop)} · ${esc(x.b.country || '')} · ${Object.keys(x.b.ratings).length}명</span></span>
           <span class="av">${x.avg.toFixed(1)}</span>
         </div>`).join('')
-      : '<div class="empty">아직 두 명 이상 평가한 원두가 없어요.</div>');
+      : '<div class="empty">두 명 이상 평가한 원두가 생기면 여기에 올라와요.</div>');
+  }
+
+  // DROP을 바꿀 때만 제목이 다시 올라옴 (스크롤에는 반응 안 함)
+  function replay() {
+    const h = document.querySelector('.drop h1');
+    if (!h || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    h.classList.remove('in'); void h.offsetWidth; h.classList.add('in');
   }
 
   // ---------- 동작 ----------
@@ -363,8 +402,7 @@
     if (!t) return;
     if (t.dataset.me) { S.me = t.dataset.me; store.set(KEY_ME, S.me); S.picker = false; render(); return; }
     if (t.id === 'meBtn') { S.picker = !S.picker; render(); return; }
-    if (t.id === 'tabDrop' || t.id === 'tabHall') { S.tab = t.id === 'tabDrop' ? 'drop' : 'hall'; render(); return; }
-    if (t.dataset.drop) { S.drop = Number(t.dataset.drop); S.open = null; render(); return; }
+    if (t.dataset.drop) { S.drop = Number(t.dataset.drop); S.open = null; render(); replay(); return; }
     if (t.dataset.open) {
       S.open = S.open === t.dataset.open ? null : t.dataset.open;
       history.replaceState(null, '', S.open ? '#b-' + S.open : location.pathname);
@@ -392,7 +430,7 @@
     if (!m) return;
     const b = beans().find((x) => x.id === m[1]);
     if (!b) return;
-    S.drop = b.drop; S.tab = 'drop'; S.open = b.id;
+    S.drop = b.drop; S.open = b.id;
     requestAnimationFrame(() => {
       const el = document.getElementById('b-' + b.id);
       if (el) { el.scrollIntoView({ block: 'start' }); el.classList.add('focus'); }
