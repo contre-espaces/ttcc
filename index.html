@@ -29,7 +29,7 @@
     --mono: 'JetBrains Mono', ui-monospace, monospace;
   }
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   body { margin: 0; background: #fff; color: var(--ink); font: 14px/1.5 var(--body); }
   button { font: inherit; cursor: pointer; color: inherit; }
   input { font: inherit; }
@@ -38,7 +38,10 @@
   :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   .skip { position: absolute; left: 12px; top: -60px; z-index: 10; padding: 12px 16px; min-height: 44px; box-sizing: border-box; border-radius: 30px; background: var(--primary); color: #fff; font-size: 13px; text-decoration: none; }
   .skip:focus { top: 8px; }
-  .wrap { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+  .wrap { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+  main:focus { outline: none; }
+  .num { font-variant-numeric: tabular-nums; }
+  h1, h2 { text-wrap: balance; }
   .mono { font-family: var(--mono); letter-spacing: 0.28px; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
@@ -64,11 +67,11 @@
   .drop .lbl { font-size: 11px; color: #9fd2c4; }
   .drop h1 { margin: 6px 0 0; font: 400 36px/1 var(--display); letter-spacing: -0.8px; }
   .drop .mine { font-size: 12px; color: #cfe3dd; text-align: right; font-family: var(--mono); }
-  .drop .mine b { display: block; font: 400 22px var(--display); color: #fff; }
+  .drop .mine b { display: block; font: 400 22px var(--display); color: #fff; font-variant-numeric: tabular-nums; }
   .track { height: 4px; border-radius: 9999px; background: rgba(255,255,255,0.18); overflow: hidden; }
-  .track i { display: block; height: 100%; border-radius: 9999px; background: var(--coral); width: 0; transition: width .3s; }
+  .track i { display: block; height: 100%; width: 100%; border-radius: 9999px; background: var(--coral); transform: scaleX(0); transform-origin: left center; transition: transform 300ms var(--ease); }
   .drops { display: flex; flex-wrap: wrap; gap: 6px; }
-  .drops button { height: 44px; min-width: 52px; padding: 0 12px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.35); background: transparent; color: #fff; font-size: 12px; font-family: var(--mono); }
+  .drops button { height: 44px; min-width: 52px; font-variant-numeric: tabular-nums; padding: 0 12px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.35); background: transparent; color: #fff; font-size: 12px; font-family: var(--mono); }
   .drops button[aria-pressed="true"] { background: #fff; color: var(--green); border-color: #fff; }
 
   .sec-h { margin: 28px 20px 4px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
@@ -80,9 +83,9 @@
   .bean.focus { animation: flash 2s ease-out; }
   @keyframes flash { 0%, 30% { background: var(--coral-bg); } 100% { background: transparent; } }
   .row { width: 100%; min-height: 72px; padding: 14px 4px; border: 0; background: transparent; text-align: left; display: flex; align-items: center; gap: 12px; }
-  .row .no { font-size: 11px; color: var(--slate); width: 38px; flex-shrink: 0; }
+  .row .no { font-variant-numeric: tabular-nums; font-size: 11px; color: var(--slate); width: 38px; flex-shrink: 0; }
   .row .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-  .row .nm { font: 400 16px/1.25 var(--display); }
+  .row .nm { font: 400 16px/1.25 var(--display); text-wrap: pretty; overflow-wrap: anywhere; }
   .row .mt { font-size: 12px; color: var(--muted); }
   .st { flex-shrink: 0; font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 30px; border: 1px solid var(--primary); white-space: nowrap; }
   .st.done { background: var(--coral-bg); color: var(--coral-ink); border-color: var(--coral-soft); }
@@ -101,26 +104,26 @@
   .scores div { padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .scores div + div { border-left: 1px solid var(--soft); }
   .scores .who { font-size: 11px; color: var(--slate); }
-  .scores .val { font: 400 18px var(--display); }
+  .scores .val { font: 400 18px var(--display); font-variant-numeric: tabular-nums; }
   .scores .nt { font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
   .note { display: flex; gap: 8px; }
   .note input { flex: 1; min-width: 0; height: 44px; padding: 0 12px; border-radius: 4px; border: 1px solid var(--hair); background: #fff; color: var(--ink); font-size: 16px; }
   .note input { transition: border-color 140ms var(--ease), box-shadow 140ms var(--ease); }
   .note input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(23,23,28,.12); outline: none; }
   .note button, .btn { height: 44px; padding: 0 18px; border-radius: 32px; border: 0; background: var(--primary); color: #fff; font-size: 13px; font-weight: 500; }
-  .note button:disabled { opacity: .5; cursor: default; }
+  .note button[aria-disabled="true"], .stars button[aria-disabled="true"] { opacity: .5; cursor: progress; }
 
   .hall-row { min-height: 60px; padding: 12px 4px; border-top: 1px solid var(--hair); display: flex; align-items: center; gap: 12px; }
   .hall-row .rk { font-size: 12px; color: var(--slate); width: 18px; }
   .hall-row .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .hall-row .nm { font: 400 16px var(--display); }
   .hall-row .mt { font-size: 12px; color: var(--muted); }
-  .hall-row .av { font: 400 18px var(--display); }
+  .hall-row .av { font: 400 18px var(--display); font-variant-numeric: tabular-nums; }
 
   .empty { padding: 32px 4px; text-align: center; color: var(--muted); font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
   .status { margin: 8px 16px 0; font-size: 12px; color: var(--slate); }
   .status:empty { display: none; }
-  footer { margin-top: auto; padding: 20px; border-top: 1px solid var(--soft); display: flex; align-items: center; justify-content: space-between; }
+  footer { margin-top: auto; padding: 20px 20px calc(20px + env(safe-area-inset-bottom)); border-top: 1px solid var(--soft); display: flex; align-items: center; justify-content: space-between; }
   footer .f-logo { font-size: 16px; letter-spacing: -0.4px; }
   footer small { font-size: 12px; color: var(--slate); }
   /* motion: hover only for a fine pointer, press for everyone */
@@ -152,14 +155,14 @@
 </head>
 <body>
 <div class="wrap">
-  <a class="skip" href="#viewDrop">원두 목록으로 바로 가기</a>
+  <a class="skip" href="#main">원두 목록으로 바로 가기</a>
   <nav>
-    <a class="brand" href="#" aria-label="TTCC 처음으로">
+    <a class="brand" href="#" translate="no">
       <span class="logo" aria-hidden="true">TTCC<i>.</i></span>
       <span class="bar" aria-hidden="true"></span>
       <span class="brand-txt"><b>The Thursday Cupping Club</b><span class="mono">EST. 2026 · SEOUL</span></span>
     </a>
-    <button type="button" class="me-btn" id="meBtn" aria-label="멤버 바꾸기" hidden></button>
+    <button type="button" class="me-btn" id="meBtn" aria-controls="picker" aria-expanded="false" translate="no" hidden><span id="meTxt"></span> <span aria-hidden="true">▾</span><span class="sr"> 멤버 바꾸기</span></button>
   </nav>
 
   <section class="card-stone" id="picker" hidden aria-labelledby="pickerTitle">
@@ -183,9 +186,10 @@
   </section>
 
   <div class="status" id="status" role="status" aria-live="polite"></div>
-  <main>
+  <div class="sr" id="live" role="status" aria-live="polite"></div>
+  <main id="main" tabindex="-1">
     <section aria-labelledby="hLine">
-      <div class="sec-h"><h2 id="hLine">Line-up</h2><span id="lineCount"></span></div>
+      <div class="sec-h"><h2 id="hLine">Line-up</h2><span id="lineCount" class="num"></span></div>
       <div class="list" id="viewDrop"></div>
     </section>
     <section aria-labelledby="hHall">
@@ -216,6 +220,7 @@
   const S = {
     data: null, me: store.get(KEY_ME), picker: false, tab: 'drop', drop: null, open: null,
     msg: {},            // 원두별 저장 상태 { text, err }
+    draft: {},          // 저장 전 감상 (다시 그려도 유지)
     busy: {}            // 원두별 저장 중
   };
   if (S.me && ['IB', 'HJ', 'KC'].indexOf(S.me) < 0) S.me = null;
@@ -264,15 +269,50 @@
 
   // ---------- 그리기 ----------
   function setStatus(t) { $('#status').textContent = t; }
+  function announce(t) { const el = $('#live'); el.textContent = ''; setTimeout(() => { el.textContent = t; }, 50); }
+  const fmtNum = new Intl.NumberFormat('ko-KR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const fmtDay = new Intl.DateTimeFormat('ko-KR', { month: 'numeric', day: 'numeric', timeZone: 'Asia/Seoul' });
+  const dayText = (iso) => {
+    const parts = fmtDay.formatToParts(new Date(iso + 'T12:00:00+09:00'));
+    const v = (t) => (parts.find((x) => x.type === t) || {}).value || '';
+    return pad(v('month')) + '.' + pad(v('day'));
+  };
+
+  // 다시 그려도 포커스·입력 위치 유지
+  function focusKey(el) {
+    if (!el || el === document.body) return null;
+    if (el.id && el.id.indexOf('n-') === 0) return { sel: '#' + el.id, caret: el.selectionStart };
+    const d = el.dataset || {};
+    if (d.rate) return { sel: '[data-rate="' + d.rate + '"][data-n="' + d.n + '"]' };
+    if (d.note) return { sel: '[data-note="' + d.note + '"]' };
+    if (d.open) return { sel: '[data-open="' + d.open + '"]' };
+    if (d.drop) return { sel: '[data-drop="' + d.drop + '"]' };
+    if (d.me) return { sel: '[data-me="' + d.me + '"]' };
+    return null;
+  }
+  function restoreFocus(k) {
+    if (!k) return;
+    const el = document.querySelector(k.sel);
+    if (!el) return;
+    el.focus({ preventScroll: true });
+    if (k.caret != null && el.setSelectionRange) el.setSelectionRange(k.caret, k.caret);
+  }
 
   function render() {
+    const fk = focusKey(document.activeElement);
+    paint();
+    restoreFocus(fk);
+  }
+
+  function paint() {
     // 멤버
     const showPicker = S.picker || !S.me;
     $('#picker').hidden = !showPicker;
     $('#meBtn').hidden = !S.me;
-    $('#meBtn').textContent = (S.me || '') + ' ▾';
+    $('#meTxt').textContent = S.me || '';
+    $('#meBtn').setAttribute('aria-expanded', String(showPicker));
     $('#pick').innerHTML = ['IB', 'HJ', 'KC'].map((id) =>
-      `<button type="button" role="radio" aria-checked="${id === S.me}" data-me="${id}">${id}</button>`).join('');
+      `<button type="button" role="radio" aria-checked="${id === S.me}" data-me="${id}" translate="no">${id}</button>`).join('');
 
     // DROP 박스
     const d = curDrop();
@@ -281,11 +321,11 @@
     if (d) {
       const isLatest = d === drops()[0];
       const arrived = list.map((b) => b.arrived).filter(Boolean).sort()[0];
-      $('#dropLbl').textContent = (isLatest ? 'LATEST DROP' : 'PAST DROP') + (arrived ? ' · ' + arrived.slice(5).replace('-', '.') + ' 도착' : '');
+      $('#dropLbl').textContent = (isLatest ? 'LATEST DROP' : 'PAST DROP') + (arrived ? ' · ' + dayText(arrived) + ' 도착' : '');
       $('#dropTitle').textContent = 'Drop ' + pad(d);
       const done = S.me ? list.filter((b) => myScore(b)).length : 0;
       $('#mineN').textContent = done + '/' + list.length;
-      $('#trackFill').style.width = (list.length ? Math.round((done / list.length) * 100) : 0) + '%';
+      $('#trackFill').style.transform = 'scaleX(' + (list.length ? done / list.length : 0) + ')';
       $('#drops').hidden = drops().length < 2;
       $('#drops').innerHTML = drops().map((x) => `<button type="button" aria-pressed="${x === d}" data-drop="${x}">${pad(x)}</button>`).join('');
     }
@@ -313,7 +353,7 @@
         b.origin && esc(b.origin),
         b.varieties.length && esc(b.varieties.join(' · ')),
         b.process && esc(b.process),
-        b.url && `<a href="${esc(b.url)}" target="_blank" rel="noopener">SEY 상품 페이지 ↗</a>`
+        b.url && `<a href="${esc(b.url)}" target="_blank" rel="noopener">SEY 상품 페이지<span aria-hidden="true"> ↗</span><span class="sr"> (새 창)</span></a>`
       ].filter(Boolean).map((x) => `<span>${x}</span>`).join('');
       let panel = '';
       if (open) {
@@ -324,20 +364,20 @@
             <div style="display:flex;flex-direction:column;gap:6px">
               <div class="cap">내 점수 · ${S.me}</div>
               <div class="stars" role="radiogroup" aria-label="별점">
-                ${[1, 2, 3, 4, 5].map((n) => `<button type="button" role="radio" aria-checked="${n === mine}" aria-label="${n}점" class="${n <= mine ? 'on' : ''}" data-rate="${b.id}" data-n="${n}" ${S.busy[b.id] ? 'disabled' : ''}>★</button>`).join('')}
+                ${[1, 2, 3, 4, 5].map((n) => `<button type="button" role="radio" aria-checked="${n === mine}" aria-label="${n}점" class="${n <= mine ? 'on' : ''}" data-rate="${b.id}" data-n="${n}" aria-disabled="${!!S.busy[b.id]}">★</button>`).join('')}
               </div>
             </div>
             ${msg ? `<div class="saved ${msg.err ? 'err' : ''}">${esc(msg.text)}</div>` : ''}
             ${mine ? `
               <div class="scores">${['IB', 'HJ', 'KC'].map((w) => {
                 const r = b.ratings[w];
-                return `<div><span class="who mono">${w}${w === S.me ? ' (나)' : ''}</span><span class="val">${r ? '★ ' + r.score : '—'}</span>${r && r.note ? `<span class="nt">${esc(r.note)}</span>` : ''}</div>`;
+                return `<div><span class="who mono" translate="no">${w}${w === S.me ? ' (나)' : ''}</span><span class="val">${r ? '★ ' + r.score : '—'}</span>${r && r.note ? `<span class="nt">${esc(r.note)}</span>` : ''}</div>`;
               }).join('')}</div>
               <label style="display:flex;flex-direction:column;gap:6px">
                 <span class="cap">한 줄 감상 (선택)</span>
                 <span class="note">
-                  <input type="text" maxlength="300" id="n-${b.id}" placeholder="예: 식으면서 복숭아가 올라옴" value="${esc((b.ratings[S.me] || {}).note || '')}">
-                  <button type="button" data-note="${b.id}" ${S.busy[b.id] ? 'disabled' : ''}>저장</button>
+                  <input type="text" name="note" autocomplete="off" enterkeyhint="done" maxlength="300" id="n-${b.id}" placeholder="예: 식으면서 복숭아가 올라옴…" value="${esc(S.draft[b.id] != null ? S.draft[b.id] : ((b.ratings[S.me] || {}).note || ''))}">
+                  <button type="button" data-note="${b.id}" aria-disabled="${!!S.busy[b.id]}">${S.busy[b.id] ? '저장 중…' : '저장'}</button>
                 </span>
               </label>`
             : `<div class="cap">블라인드 커핑: 내 점수를 남기면 다른 멤버 점수가 열려요. (${others}명 평가함)</div>`}`}
@@ -346,7 +386,7 @@
       return `<article class="bean" id="b-${b.id}">
         <button type="button" class="row" aria-expanded="${open}" aria-controls="p-${b.id}" data-open="${b.id}">
           <span class="no mono">${esc(b.no)}</span>
-          <span class="tx"><span class="nm">${esc(b.name)}</span><span class="mt">${esc(metaOf(b))}</span></span>
+          <span class="tx"><span class="nm" translate="no">${esc(b.name)}</span><span class="mt">${esc(metaOf(b))}</span></span>
           <span class="st ${mine ? 'done' : ''}">${status}</span>
         </button>${panel}
       </article>`;
@@ -362,9 +402,9 @@
       .slice(0, 10);
     el.innerHTML = (ranked.length
       ? ranked.map((x, i) => `<div class="hall-row">
-          <span class="rk mono">${i + 1}</span>
-          <span class="tx"><span class="nm">${esc(x.b.name)}</span><span class="mt">DROP ${pad(x.b.drop)} · ${esc(x.b.country || '')} · ${Object.keys(x.b.ratings).length}명</span></span>
-          <span class="av">${x.avg.toFixed(1)}</span>
+          <span class="rk mono num">${i + 1}</span>
+          <span class="tx"><span class="nm" translate="no">${esc(x.b.name)}</span><span class="mt">DROP ${pad(x.b.drop)} · ${esc(x.b.country || '')} · ${Object.keys(x.b.ratings).length}명</span></span>
+          <span class="av">${fmtNum.format(x.avg)}</span>
         </div>`).join('')
       : '<div class="empty">두 명 이상 평가한 원두가 생기면 여기에 올라와요.</div>');
   }
@@ -388,10 +428,15 @@
     try {
       await send({ bean: id, member: S.me, score: n, note: note });
       S.msg[id] = { text: note != null ? '✓ 감상까지 저장됐어요' : '✓ 저장됐어요 · 다시 누르면 바뀌어요' };
+      if (note != null) delete S.draft[id];
       store.set(KEY_DATA, JSON.stringify(S.data));
+      announce(b.name + ' ' + n + '점' + (note != null ? ', 감상' : '') + ' 저장됨');
     } catch (e) {
       if (prev) b.ratings[S.me] = prev; else delete b.ratings[S.me];
-      S.msg[id] = { text: '저장하지 못했어요. 다시 눌러주세요. (' + e.message + ')', err: true };
+      console.warn('TTCC 저장 실패:', e);
+      const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+      S.msg[id] = { text: offline ? '인터넷 연결을 확인하고 다시 눌러주세요.' : '저장하지 못했어요. 잠시 후 다시 눌러주세요.', err: true };
+      announce('저장하지 못했어요. 다시 눌러주세요.');
     }
     S.busy[id] = false;
     render();
@@ -402,10 +447,10 @@
     if (!t) return;
     if (t.dataset.me) { S.me = t.dataset.me; store.set(KEY_ME, S.me); S.picker = false; render(); return; }
     if (t.id === 'meBtn') { S.picker = !S.picker; render(); return; }
-    if (t.dataset.drop) { S.drop = Number(t.dataset.drop); S.open = null; render(); replay(); return; }
+    if (t.dataset.drop) { S.drop = Number(t.dataset.drop); S.open = null; history.replaceState(null, '', '#d-' + S.drop); render(); replay(); return; }
     if (t.dataset.open) {
       S.open = S.open === t.dataset.open ? null : t.dataset.open;
-      history.replaceState(null, '', S.open ? '#b-' + S.open : location.pathname);
+      history.replaceState(null, '', S.open ? '#b-' + S.open : (S.drop ? '#d-' + S.drop : location.pathname));
       render();
       return;
     }
@@ -413,9 +458,13 @@
     if (t.dataset.note) {
       const id = t.dataset.note;
       const b = beans().find((x) => x.id === id);
-      const v = ($('#n-' + id) || {}).value || '';
+      const v = S.draft[id] != null ? S.draft[id] : (($('#n-' + id) || {}).value || '');
       if (b && myScore(b)) rate(id, myScore(b), v.trim());
     }
+  });
+  document.addEventListener('input', (ev) => {
+    const id = ev.target.id || '';
+    if (id.indexOf('n-') === 0) S.draft[id.slice(2)] = ev.target.value;
   });
   document.addEventListener('keydown', (ev) => {
     if (ev.key === 'Enter' && ev.target.id && ev.target.id.indexOf('n-') === 0) {
@@ -426,6 +475,8 @@
 
   // #b-<원두ID>로 열면 그 원두를 펼침 (노션 '별점 링크')
   function applyHash() {
+    const dm = location.hash.match(/^#d-(\d+)$/);
+    if (dm) { S.drop = Number(dm[1]); return; }
     const m = location.hash.match(/^#b-([0-9a-f]{32})$/);
     if (!m) return;
     const b = beans().find((x) => x.id === m[1]);
