@@ -25,7 +25,7 @@
     --ink: #212121; --primary: #17171c; --muted: #616161; --slate: #75758a; --hair: #d9d9dd; --soft: #f2f2f2;
     --stone: #eeece7; --green: #003c33; --coral: #ff7759; --coral-soft: #ffad9b; --coral-ink: #b33f24; --coral-bg: #fff6f3;
     --ok: #1d6b3a; --err: #b30000; --focus: #1863dc;
-    --bg: #ffffff; --on-primary: #ffffff; --hover: #f4f4f5; --primary-hover: #2e2e36; --placeholder: #93939f; --ring: rgba(23,23,28,.12); --field: #8e8e9a;
+    --bg: #ffffff; --on-primary: #ffffff; --hover: #f4f4f5; --primary-hover: #2e2e36; --placeholder: #6e6e7a; --ring: rgba(23,23,28,.12); --field: #8e8e9a;
     --ease: cubic-bezier(.2,.8,.2,1); --ease-enter: cubic-bezier(.22,1,.36,1);
     --display: 'Space Grotesk', 'Noto Sans KR', sans-serif;
     --body: 'Google Sans', 'Noto Sans KR', system-ui, sans-serif;
@@ -37,7 +37,7 @@
       --ink: #e8e8ea; --primary: #f4f4f5; --muted: #a8a8b0; --slate: #9898a6; --hair: #33333b; --soft: #222228;
       --stone: #26262c; --green: #3fb59a; --coral-soft: #8a4535; --coral-ink: #ffa08a; --coral-bg: #2a1814;
       --ok: #5ccf8c; --err: #ff7a6e; --focus: #6ea2ff;
-      --bg: #111114; --on-primary: #111114; --hover: #1e1e24; --primary-hover: #d4d4d8; --placeholder: #6b6b78; --ring: rgba(244,244,245,.18); --field: #66667a;
+      --bg: #111114; --on-primary: #111114; --hover: #1e1e24; --primary-hover: #d4d4d8; --placeholder: #8c8c98; --ring: rgba(244,244,245,.18); --field: #66667a;
     }
   }
   * { box-sizing: border-box; }
@@ -46,7 +46,9 @@
   button { font: inherit; cursor: pointer; color: inherit; }
   input { font: inherit; }
   input::placeholder { color: var(--placeholder); }
-  a { color: var(--ink); }
+  a { color: var(--ink); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  ::selection { background: var(--coral); color: #111114; }
+  input { caret-color: var(--coral); }
   :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   .skip { position: absolute; left: 12px; top: -60px; z-index: 10; padding: 12px 16px; min-height: 44px; box-sizing: border-box; border-radius: 30px; background: var(--primary); color: var(--on-primary); font-size: 13px; text-decoration: none; }
   .skip:focus { top: 8px; }
@@ -65,7 +67,7 @@
   .brand-txt { display: flex; flex-direction: column; gap: 1px; }
   .brand-txt b { font: 400 15px/1.1 var(--display); letter-spacing: -0.2px; }
   .brand-txt span { font-size: 11px; color: var(--slate); }
-  .me-btn { height: 44px; padding: 0 14px; border-radius: 30px; border: 1px solid var(--primary); background: transparent; font-size: 13px; font-weight: 500; }
+  .me-btn { height: 44px; padding: 0 12px 0 16px; display: inline-flex; align-items: center; gap: 4px; border-radius: 30px; border: 1px solid var(--primary); background: transparent; font-size: 13px; font-weight: 500; }
 
   .card-stone { margin: 12px 12px 0; padding: 20px; border-radius: 8px; background: var(--stone); display: flex; flex-direction: column; gap: 12px; }
   .card-stone h2 { margin: 0; font-size: 16px; font-weight: 500; }
@@ -75,9 +77,10 @@
   .pick button[aria-checked="true"] { background: var(--primary); color: var(--on-primary); }
 
   .drop { padding: 36px 20px 28px; display: flex; flex-direction: column; gap: 22px; border-bottom: 1px solid var(--soft); }
-  .drop .lbl { font-size: 12px; letter-spacing: 1px; color: var(--slate); }
-  .drop h1 { margin: 0; font: 500 clamp(56px, 20vw, 76px)/.9 var(--head); letter-spacing: -3.2px; color: var(--primary); padding-bottom: 6px; }
+  .drop .meta { margin-top: -10px; font: 13px var(--body); letter-spacing: 0; color: var(--slate); font-variant-numeric: tabular-nums; }
+  .drop h1 { margin: 0; font: 500 76px/.9 var(--head); letter-spacing: -0.04em; color: var(--primary); padding-bottom: 6px; }
   .drop h1 i { font-style: normal; color: var(--coral); }
+  @media (max-width: 359px) { .drop h1 { font-size: 64px; } }
   .drop-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
   .drop .mine { font: 12px var(--mono); letter-spacing: 1px; color: var(--slate); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .drop .mine b { font-weight: 400; color: var(--primary); }
@@ -100,7 +103,7 @@
   .row .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
   .row .nm { font: 400 16px/1.25 var(--display); text-wrap: pretty; overflow-wrap: anywhere; }
   .row .mt { font-size: 12px; color: var(--muted); }
-  .st { flex-shrink: 0; font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 30px; border: 1px solid var(--primary); white-space: nowrap; }
+  .st { flex-shrink: 0; display: inline-flex; align-items: center; font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 30px; border: 1px solid var(--primary); white-space: nowrap; }
   .st.done { background: var(--coral-bg); color: var(--coral-ink); border-color: var(--coral-soft); }
   .panel { padding: 4px 4px 20px 54px; display: flex; flex-direction: column; gap: 14px; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -109,15 +112,20 @@
   .facts a { color: var(--muted); text-underline-offset: 3px; }
   .cap { font-size: 12px; color: var(--slate); }
   .stars { display: flex; margin-left: -6px; }
-  .stars button { width: 48px; height: 48px; border: 0; background: transparent; padding: 0; font-size: 30px; line-height: 1; color: var(--hair); }
+  .ic { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linejoin: round; stroke-linecap: round; vertical-align: -0.125em; flex-shrink: 0; }
+  .ic-fill { fill: currentColor; }
+  .ic-sm { width: .9em; height: .9em; }
+  .stars button { width: 48px; height: 48px; border: 0; background: transparent; padding: 0; font-size: 30px; line-height: 0; color: var(--field); display: inline-flex; align-items: center; justify-content: center; }
   .stars button.on { color: var(--coral); }
+  .stars button.on .ic { fill: currentColor; }
+  .st .ic, .scores .val .ic { fill: currentColor; font-size: .85em; margin-right: 3px; }
   .saved { font-size: 12px; color: var(--ok); }
   .saved.err { color: var(--err); }
   .scores { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--hair); border-radius: 8px; }
   .scores div { padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .scores div + div { border-left: 1px solid var(--soft); }
   .scores .who { font-size: 11px; color: var(--slate); }
-  .scores .val { font: 500 18px var(--head); font-variant-numeric: tabular-nums; }
+  .scores .val { display: flex; align-items: center; font: 500 18px var(--head); font-variant-numeric: tabular-nums; }
   .scores .nt { font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
   .note { display: flex; gap: 8px; }
   .note input { flex: 1; min-width: 0; height: 44px; padding: 0 12px; border-radius: 4px; border: 1px solid var(--field); background: var(--bg); color: var(--ink); font-size: 16px; }
@@ -133,6 +141,12 @@
   .hall-row .mt { font-size: 12px; color: var(--muted); }
   .hall-row .av { font: 500 18px var(--head); font-variant-numeric: tabular-nums; }
 
+  .skel { display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 14px 4px; border-top: 1px solid var(--hair); }
+  .skel i { display: block; height: 12px; border-radius: 6px; background: var(--soft); }
+  .skel i:first-child { width: 34px; }
+  .skel span { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .skel span i:last-child { width: 45%; }
+  .btn-line { height: 44px; padding: 0 18px; border-radius: 30px; border: 1px solid var(--primary); background: transparent; color: var(--primary); font-size: 13px; font-weight: 500; }
   .empty { padding: 32px 4px; text-align: center; color: var(--muted); font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
   .status { margin: 8px 16px 0; font-size: 12px; color: var(--slate); }
   .status:empty { display: none; }
@@ -153,19 +167,11 @@
     .stars button:hover { color: var(--coral-soft); }
     .stars button.on:hover { color: var(--coral); }
   }
-  /* entrance: once on load */
-  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-  @keyframes mask { from { transform: translateY(105%); } to { transform: none; } }
-  .drop h1 { overflow: hidden; }
-  .drop h1 > span { display: inline-block; }
-  html.m-enter:not(.m-enter-done) .drop h1 > span, html.m-enter .drop h1.in > span { animation: mask 700ms var(--ease-enter) both; }
-  html.m-enter .drop .drop-foot, html.m-enter .drop .lbl { animation: rise 520ms var(--ease-enter) 180ms both; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition-property: color, background-color, border-color, opacity !important; }
   }
   [hidden] { display: none !important; }
 </style>
-<script>document.documentElement.classList.add('m-enter');setTimeout(function(){document.documentElement.classList.add('m-enter-done')},900)</script>
 </head>
 <body>
 <div class="wrap">
@@ -176,7 +182,7 @@
       <span class="bar" aria-hidden="true"></span>
       <span class="brand-txt"><b>The Thursday Cupping Club</b><span class="mono">EST. 2026</span></span>
     </a>
-    <button type="button" class="me-btn" id="meBtn" aria-controls="picker" aria-expanded="false" translate="no" hidden><span id="meTxt"></span> <span aria-hidden="true">▾</span><span class="sr"> 멤버 바꾸기</span></button>
+    <button type="button" class="me-btn" id="meBtn" aria-controls="picker" aria-expanded="false" translate="no" hidden><span id="meTxt"></span><svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg><span class="sr"> 멤버 바꾸기</span></button>
   </nav>
 
   <section class="card-stone" id="picker" hidden aria-labelledby="pickerTitle">
@@ -188,8 +194,8 @@
   </section>
 
   <section class="drop" id="dropBox" hidden>
-    <div class="lbl mono" id="dropLbl">LATEST DROP</div>
     <h1 translate="no"><span><span id="dropTitle">Drop</span><i aria-hidden="true">.</i></span></h1>
+    <p class="meta" id="dropLbl"></p>
     <div class="drop-foot">
       <div class="mine" id="mine">내 평가 <b id="mineN">0/0</b></div>
       <div class="track" aria-hidden="true"><i id="trackFill"></i></div>
@@ -228,6 +234,10 @@
   };
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const pad = (n) => ('0' + n).slice(-2);
+  const ICON = {
+    star: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2l2.7 5.5 6 .9-4.35 4.25 1.03 6L12 17l-5.38 2.85 1.03-6L3.3 9.6l6-.9z"/></svg>',
+    out: '<svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 16 16 8M9.5 8H16v6.5"/></svg>'
+  };
 
   const S = {
     data: null, me: store.get(KEY_ME), picker: false, tab: 'drop', drop: null, open: null,
@@ -241,16 +251,17 @@
   try { const c = JSON.parse(store.get(KEY_DATA) || 'null'); if (c && c.ok) S.data = c; } catch (e) { /* 캐시 무시 */ }
 
   async function load(fresh) {
-    setStatus(S.data ? '' : '불러오는 중…');
+    setStatus(S.data ? '' : '원두 목록 불러오는 중…');
     try {
       const r = await fetch(API + (fresh ? '?fresh=1' : ''), { cache: 'no-store', credentials: 'omit' });
       const d = await r.json();
       if (!d.ok) throw new Error(d.error || '불러오기 실패');
-      S.data = d;
+      S.data = d; S.failed = false;
       store.set(KEY_DATA, JSON.stringify(d));
       setStatus('');
     } catch (e) {
-      setStatus(S.data ? '최신 정보를 못 불러와서 저장된 화면을 보여드려요.' : '불러오지 못했어요. 잠시 후 다시 열어주세요.');
+      S.failed = !S.data;
+      setStatus(S.data ? '최신 정보를 못 불러와서 저장된 화면을 보여드려요.' : '');
     }
     applyHash();
     render();
@@ -333,7 +344,7 @@
     if (d) {
       const isLatest = d === drops()[0];
       const arrived = list.map((b) => b.arrived).filter(Boolean).sort()[0];
-      $('#dropLbl').textContent = (isLatest ? 'LATEST DROP' : 'PAST DROP') + (arrived ? ' · ' + dayText(arrived) : '') + ' · SEY';
+      $('#dropLbl').textContent = [isLatest ? '최신' : '지난 DROP', arrived ? dayText(arrived) + ' 도착' : '', 'SEY'].filter(Boolean).join(' · ');
       $('#dropTitle').textContent = 'Drop ' + pad(d);
       const done = S.me ? list.filter((b) => myScore(b)).length : 0;
       $('#mineN').textContent = done + '/' + list.length;
@@ -350,7 +361,12 @@
 
   function renderDrop(list) {
     const el = $('#viewDrop');
-    if (!S.data) { el.innerHTML = ''; return; }
+    if (!S.data) {
+      el.innerHTML = S.failed
+        ? '<div class="empty"><span>원두 목록을 불러오지 못했어요.</span><button type="button" class="btn-line" data-retry="1">다시 불러오기</button></div>'
+        : '<div aria-hidden="true">' + '<div class="skel"><i></i><span><i></i><i></i></span></div>'.repeat(3) + '</div>';
+      return;
+    }
     if (!list.length) {
       el.innerHTML = '<div class="empty"><span>첫 DROP을 기다리는 중이에요.</span><span>원두가 도착하면 여기에 올라와요.</span></div>';
       return;
@@ -358,14 +374,14 @@
     el.innerHTML = list.map((b) => {
       const mine = myScore(b);
       const open = S.open === b.id;
-      const status = !S.me ? '보기' : mine ? '★ ' + mine : '평가하기';
+      const status = !S.me ? '보기' : mine ? ICON.star + mine : '평가하기';
       const others = ['IB', 'HJ', 'KC'].filter((w) => w !== S.me && b.ratings[w]).length;
       const msg = S.msg[b.id];
       const facts = [
         b.origin && esc(b.origin),
         b.varieties.length && esc(b.varieties.join(' · ')),
         b.process && esc(b.process),
-        b.url && `<a href="${esc(b.url)}" target="_blank" rel="noopener">SEY 상품 페이지<span aria-hidden="true"> ↗</span><span class="sr"> (새 창)</span></a>`
+        b.url && `<a href="${esc(b.url)}" target="_blank" rel="noopener">SEY 상품 페이지 ${ICON.out}<span class="sr"> (새 창)</span></a>`
       ].filter(Boolean).map((x) => `<span>${x}</span>`).join('');
       let panel = '';
       if (open) {
@@ -376,14 +392,14 @@
             <div style="display:flex;flex-direction:column;gap:6px">
               <div class="cap">내 점수 · ${S.me}</div>
               <div class="stars" role="radiogroup" aria-label="별점">
-                ${[1, 2, 3, 4, 5].map((n) => `<button type="button" role="radio" aria-checked="${n === mine}" aria-label="${n}점" class="${n <= mine ? 'on' : ''}" data-rate="${b.id}" data-n="${n}" aria-disabled="${!!S.busy[b.id]}">★</button>`).join('')}
+                ${[1, 2, 3, 4, 5].map((n) => `<button type="button" role="radio" aria-checked="${n === mine}" aria-label="${n}점" class="${n <= mine ? 'on' : ''}" data-rate="${b.id}" data-n="${n}" aria-disabled="${!!S.busy[b.id]}">${ICON.star}</button>`).join('')}
               </div>
             </div>
             ${msg ? `<div class="saved ${msg.err ? 'err' : ''}">${esc(msg.text)}</div>` : ''}
             ${mine ? `
               <div class="scores">${['IB', 'HJ', 'KC'].map((w) => {
                 const r = b.ratings[w];
-                return `<div><span class="who mono" translate="no">${w}${w === S.me ? ' (나)' : ''}</span><span class="val">${r ? '★ ' + r.score : '—'}</span>${r && r.note ? `<span class="nt">${esc(r.note)}</span>` : ''}</div>`;
+                return `<div><span class="who mono" translate="no">${w}${w === S.me ? ' (나)' : ''}</span><span class="val">${r ? ICON.star + r.score : '<span aria-label="아직 없음">–</span>'}</span>${r && r.note ? `<span class="nt">${esc(r.note)}</span>` : ''}</div>`;
               }).join('')}</div>
               <label style="display:flex;flex-direction:column;gap:6px">
                 <span class="cap">한 줄 감상 (선택)</span>
@@ -399,7 +415,7 @@
         <button type="button" class="row" aria-expanded="${open}" aria-controls="p-${b.id}" data-open="${b.id}">
           <span class="no mono">${esc(b.no)}</span>
           <span class="tx"><span class="nm" translate="no">${esc(b.name)}</span><span class="mt">${esc(metaOf(b))}</span></span>
-          <span class="st ${mine ? 'done' : ''}">${status}</span>
+          <span class="st ${mine ? 'done' : ''}"${mine ? ` aria-label="내 점수 ${mine}점"` : ''}>${status}</span>
         </button>${panel}
       </article>`;
     }).join('');
@@ -419,13 +435,6 @@
           <span class="av">${fmtNum.format(x.avg)}</span>
         </div>`).join('')
       : '<div class="empty">두 명 이상 평가한 원두가 생기면 여기에 올라와요.</div>');
-  }
-
-  // DROP을 바꿀 때만 제목이 다시 올라옴 (스크롤에는 반응 안 함)
-  function replay() {
-    const h = document.querySelector('.drop h1');
-    if (!h || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    h.classList.remove('in'); void h.offsetWidth; h.classList.add('in');
   }
 
   // ---------- 동작 ----------
@@ -457,9 +466,10 @@
   document.addEventListener('click', (ev) => {
     const t = ev.target.closest('button, a');
     if (!t) return;
+    if (t.dataset.retry) { S.failed = false; render(); load(true); return; }
     if (t.dataset.me) { S.me = t.dataset.me; store.set(KEY_ME, S.me); S.picker = false; render(); return; }
     if (t.id === 'meBtn') { S.picker = !S.picker; render(); return; }
-    if (t.dataset.drop) { S.drop = Number(t.dataset.drop); S.open = null; history.replaceState(null, '', '#d-' + S.drop); render(); replay(); return; }
+    if (t.dataset.drop) { S.drop = Number(t.dataset.drop); S.open = null; history.replaceState(null, '', '#d-' + S.drop); render(); return; }
     if (t.dataset.open) {
       S.open = S.open === t.dataset.open ? null : t.dataset.open;
       history.replaceState(null, '', S.open ? '#b-' + S.open : (S.drop ? '#d-' + S.drop : location.pathname));
