@@ -13,8 +13,9 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#ffffff">
-<meta name="color-scheme" content="light only">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111114" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317171c'/%3E%3Ccircle cx='46' cy='44' r='6' fill='%23ff7759'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,21 +25,30 @@
     --ink: #212121; --primary: #17171c; --muted: #616161; --slate: #75758a; --hair: #d9d9dd; --soft: #f2f2f2;
     --stone: #eeece7; --green: #003c33; --coral: #ff7759; --coral-soft: #ffad9b; --coral-ink: #b33f24; --coral-bg: #fff6f3;
     --ok: #1d6b3a; --err: #b30000; --focus: #1863dc;
+    --bg: #ffffff; --on-primary: #ffffff; --hover: #f4f4f5; --primary-hover: #2e2e36; --placeholder: #93939f; --ring: rgba(23,23,28,.12); --field: #8e8e9a;
     --ease: cubic-bezier(.2,.8,.2,1); --ease-enter: cubic-bezier(.22,1,.36,1);
     --display: 'Space Grotesk', 'Noto Sans KR', sans-serif;
     --body: 'Google Sans', 'Noto Sans KR', system-ui, sans-serif;
     --head: 'Google Sans', 'Noto Sans KR', sans-serif;
     --mono: 'JetBrains Mono', ui-monospace, monospace;
   }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #e8e8ea; --primary: #f4f4f5; --muted: #a8a8b0; --slate: #9898a6; --hair: #33333b; --soft: #222228;
+      --stone: #26262c; --green: #3fb59a; --coral-soft: #8a4535; --coral-ink: #ffa08a; --coral-bg: #2a1814;
+      --ok: #5ccf8c; --err: #ff7a6e; --focus: #6ea2ff;
+      --bg: #111114; --on-primary: #111114; --hover: #1e1e24; --primary-hover: #d4d4d8; --placeholder: #6b6b78; --ring: rgba(244,244,245,.18); --field: #66667a;
+    }
+  }
   * { box-sizing: border-box; }
-  html { color-scheme: light only; -webkit-text-size-adjust: 100%; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-  body { margin: 0; background: #fff; color: var(--ink); font: 14px/1.5 var(--body); }
+  html { color-scheme: light dark; -webkit-text-size-adjust: 100%; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--body); }
   button { font: inherit; cursor: pointer; color: inherit; }
   input { font: inherit; }
-  input::placeholder { color: #93939f; }
+  input::placeholder { color: var(--placeholder); }
   a { color: var(--ink); }
   :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-  .skip { position: absolute; left: 12px; top: -60px; z-index: 10; padding: 12px 16px; min-height: 44px; box-sizing: border-box; border-radius: 30px; background: var(--primary); color: #fff; font-size: 13px; text-decoration: none; }
+  .skip { position: absolute; left: 12px; top: -60px; z-index: 10; padding: 12px 16px; min-height: 44px; box-sizing: border-box; border-radius: 30px; background: var(--primary); color: var(--on-primary); font-size: 13px; text-decoration: none; }
   .skip:focus { top: 8px; }
   .wrap { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
   main:focus { outline: none; }
@@ -47,7 +57,7 @@
   .mono { font-family: var(--mono); letter-spacing: 0.28px; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-  nav { height: 56px; padding: 0 16px 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--soft); background: #fff; position: sticky; top: 0; z-index: 5; }
+  nav { height: 56px; padding: 0 16px 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--soft); background: var(--bg); position: sticky; top: 0; z-index: 5; }
   .brand { display: flex; align-items: center; gap: 10px; min-height: 44px; text-decoration: none; }
   .logo { font-family: 'Google Sans', var(--display); font-weight: 500; font-size: 24px; line-height: 1; letter-spacing: -0.8px; color: var(--primary); }
   .logo i { font-style: normal; color: var(--coral); }
@@ -61,8 +71,8 @@
   .card-stone h2 { margin: 0; font-size: 16px; font-weight: 500; }
   .card-stone p { margin: 0; font-size: 13px; color: var(--muted); }
   .pick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-  .pick button { height: 48px; border-radius: 30px; font-size: 15px; font-weight: 500; border: 1px solid var(--primary); background: #fff; color: var(--primary); }
-  .pick button[aria-checked="true"] { background: var(--primary); color: #fff; }
+  .pick button { height: 48px; border-radius: 30px; font-size: 15px; font-weight: 500; border: 1px solid var(--primary); background: var(--bg); color: var(--primary); }
+  .pick button[aria-checked="true"] { background: var(--primary); color: var(--on-primary); }
 
   .drop { padding: 36px 20px 28px; display: flex; flex-direction: column; gap: 22px; border-bottom: 1px solid var(--soft); }
   .drop .lbl { font-size: 12px; letter-spacing: 1px; color: var(--slate); }
@@ -75,7 +85,7 @@
   .track i { display: block; height: 100%; width: 100%; border-radius: 9999px; background: var(--green); transform: scaleX(0); transform-origin: left center; transition: transform 300ms var(--ease); }
   .drops { display: flex; flex-wrap: wrap; gap: 6px; }
   .drops button { height: 44px; min-width: 56px; padding: 0 14px; border-radius: 30px; border: 1px solid var(--hair); background: transparent; color: var(--muted); font: 12px var(--mono); letter-spacing: 1px; font-variant-numeric: tabular-nums; }
-  .drops button[aria-pressed="true"] { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .drops button[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
 
   .sec-h { margin: 28px 20px 4px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
   .sec-h h2 { margin: 0; font: 500 24px/1.2 var(--head); letter-spacing: -0.6px; color: var(--primary); }
@@ -110,10 +120,10 @@
   .scores .val { font: 500 18px var(--head); font-variant-numeric: tabular-nums; }
   .scores .nt { font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
   .note { display: flex; gap: 8px; }
-  .note input { flex: 1; min-width: 0; height: 44px; padding: 0 12px; border-radius: 4px; border: 1px solid var(--hair); background: #fff; color: var(--ink); font-size: 16px; }
+  .note input { flex: 1; min-width: 0; height: 44px; padding: 0 12px; border-radius: 4px; border: 1px solid var(--field); background: var(--bg); color: var(--ink); font-size: 16px; }
   .note input { transition: border-color 140ms var(--ease), box-shadow 140ms var(--ease); }
-  .note input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(23,23,28,.12); outline: none; }
-  .note button, .btn { height: 44px; padding: 0 18px; border-radius: 32px; border: 0; background: var(--primary); color: #fff; font-size: 13px; font-weight: 500; }
+  .note input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--ring); outline: none; }
+  .note button, .btn { height: 44px; padding: 0 18px; border-radius: 32px; border: 0; background: var(--primary); color: var(--on-primary); font-size: 13px; font-weight: 500; }
   .note button[aria-disabled="true"], .stars button[aria-disabled="true"] { opacity: .5; cursor: progress; }
 
   .hall-row { min-height: 60px; padding: 12px 4px; border-top: 1px solid var(--hair); display: flex; align-items: center; gap: 12px; }
@@ -134,12 +144,12 @@
   .pick button:active, .me-btn:active, .drops button:active, .note button:active { transform: translateY(1px) scale(.985); transition-duration: 90ms; }
   .stars button:active { transform: scale(.92); transition-duration: 90ms; }
   @media (hover: hover) and (pointer: fine) {
-    .pick button:hover, .me-btn:hover { transform: translateY(-1px); background: #f4f4f5; }
-    .pick button[aria-checked="true"]:hover, .note button:hover { transform: translateY(-1px); background: #2e2e36; }
+    .pick button:hover, .me-btn:hover { transform: translateY(-1px); background: var(--hover); }
+    .pick button[aria-checked="true"]:hover, .note button:hover { transform: translateY(-1px); background: var(--primary-hover); }
     .drops button:hover { transform: translateY(-1px); border-color: var(--primary); color: var(--primary); }
-    .drops button[aria-pressed="true"]:hover { color: #fff; background: #2e2e36; }
+    .drops button[aria-pressed="true"]:hover { color: var(--on-primary); background: var(--primary-hover); }
     .row:hover .nm { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
-    .row:hover .st:not(.done) { background: var(--primary); color: #fff; }
+    .row:hover .st:not(.done) { background: var(--primary); color: var(--on-primary); }
     .stars button:hover { color: var(--coral-soft); }
     .stars button.on:hover { color: var(--coral); }
   }
