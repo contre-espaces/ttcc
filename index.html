@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TTCC — The Thursday Cupping Club</title>
+<meta name="description" content="세 명이 한 봉을 나눠 마시고, 점수를 남깁니다.">
+<meta property="og:title" content="TTCC — The Thursday Cupping Club">
+<meta property="og:description" content="이번 DROP 별점 남기러 가기">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ttcc.inbeom.com/">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317171c'/%3E%3Ccircle cx='46' cy='44' r='6' fill='%23ff7759'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@500&family=Space+Grotesk:wght@400;500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&family=Noto+Sans+KR:wght@400;500&display=swap">
+<style>
+  :root {
+    --ink: #212121; --primary: #17171c; --muted: #616161; --slate: #75758a; --hair: #d9d9dd; --soft: #f2f2f2;
+    --stone: #eeece7; --green: #003c33; --coral: #ff7759; --coral-soft: #ffad9b; --coral-ink: #b33f24; --coral-bg: #fff6f3;
+    --ok: #1d6b3a; --err: #b30000; --focus: #4c6ee6;
+    --display: 'Space Grotesk', 'Noto Sans KR', sans-serif;
+    --body: Inter, 'Noto Sans KR', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: #fff; color: var(--ink); font: 14px/1.5 var(--body); }
+  button { font: inherit; cursor: pointer; color: inherit; }
+  input { font: inherit; }
+  input::placeholder { color: #93939f; }
+  a { color: var(--ink); }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .wrap { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+  .mono { font-family: var(--mono); letter-spacing: 0.28px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  nav { height: 56px; padding: 0 16px 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--soft); background: #fff; position: sticky; top: 0; z-index: 5; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo { font-family: 'Google Sans', var(--display); font-weight: 500; font-size: 24px; line-height: 1; letter-spacing: -0.8px; color: var(--primary); }
+  .logo i { font-style: normal; color: var(--coral); }
+  .bar { width: 1px; height: 24px; background: var(--hair); }
+  .brand-txt { display: flex; flex-direction: column; gap: 1px; }
+  .brand-txt b { font: 400 15px/1.1 var(--display); letter-spacing: -0.2px; }
+  .brand-txt span { font-size: 10px; color: var(--slate); }
+  .me-btn { height: 36px; padding: 0 14px; border-radius: 30px; border: 1px solid var(--primary); background: transparent; font-size: 13px; font-weight: 500; }
+
+  .card-stone { margin: 12px 12px 0; padding: 20px; border-radius: 8px; background: var(--stone); display: flex; flex-direction: column; gap: 12px; }
+  .card-stone h2 { margin: 0; font-size: 16px; font-weight: 500; }
+  .card-stone p { margin: 0; font-size: 13px; color: var(--muted); }
+  .pick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .pick button { height: 48px; border-radius: 30px; font-size: 15px; font-weight: 500; border: 1px solid var(--primary); background: #fff; color: var(--primary); }
+  .pick button[aria-checked="true"] { background: var(--primary); color: #fff; }
+
+  .drop { margin: 12px 12px 0; padding: 20px; border-radius: 22px; background: var(--green); color: #fff; display: flex; flex-direction: column; gap: 14px; }
+  .drop-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+  .drop .lbl { font-size: 11px; color: #9fd2c4; }
+  .drop h1 { margin: 6px 0 0; font: 400 36px/1 var(--display); letter-spacing: -0.8px; }
+  .drop .mine { font-size: 12px; color: #cfe3dd; text-align: right; font-family: var(--mono); }
+  .drop .mine b { display: block; font: 400 22px var(--display); color: #fff; }
+  .track { height: 4px; border-radius: 9999px; background: rgba(255,255,255,0.18); overflow: hidden; }
+  .track i { display: block; height: 100%; border-radius: 9999px; background: var(--coral); width: 0; transition: width .3s; }
+  .drops { display: flex; flex-wrap: wrap; gap: 6px; }
+  .drops button { height: 32px; padding: 0 12px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.35); background: transparent; color: #fff; font-size: 12px; font-family: var(--mono); }
+  .drops button[aria-pressed="true"] { background: #fff; color: var(--green); border-color: #fff; }
+
+  .tabs { margin: 20px 16px 4px; display: flex; gap: 8px; }
+  .tabs button { height: 36px; padding: 0 16px; border-radius: 30px; font-size: 13px; font-weight: 500; border: 1px solid var(--hair); background: transparent; color: var(--muted); }
+  .tabs button[aria-selected="true"] { border-color: var(--primary); background: var(--primary); color: #fff; }
+
+  .list { padding: 8px 16px 16px; display: flex; flex-direction: column; }
+  .bean { border-top: 1px solid var(--hair); scroll-margin-top: 64px; }
+  .bean.focus { animation: flash 2s ease-out; }
+  @keyframes flash { 0%, 30% { background: var(--coral-bg); } 100% { background: transparent; } }
+  .row { width: 100%; min-height: 72px; padding: 14px 4px; border: 0; background: transparent; text-align: left; display: flex; align-items: center; gap: 12px; }
+  .row .no { font-size: 11px; color: var(--slate); width: 38px; flex-shrink: 0; }
+  .row .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .row .nm { font: 400 16px/1.25 var(--display); }
+  .row .mt { font-size: 12px; color: var(--muted); }
+  .st { flex-shrink: 0; font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 30px; border: 1px solid var(--primary); white-space: nowrap; }
+  .st.done { background: var(--coral-bg); color: var(--coral-ink); border-color: var(--coral-soft); }
+  .panel { padding: 4px 4px 20px 54px; display: flex; flex-direction: column; gap: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips span { font-size: 12px; padding: 3px 10px; border-radius: 30px; border: 1px solid var(--coral-soft); color: var(--coral-ink); background: var(--coral-bg); }
+  .facts { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--muted); }
+  .facts a { color: var(--muted); text-underline-offset: 3px; }
+  .cap { font-size: 12px; color: var(--slate); }
+  .stars { display: flex; margin-left: -6px; }
+  .stars button { width: 48px; height: 48px; border: 0; background: transparent; padding: 0; font-size: 30px; line-height: 1; color: var(--hair); }
+  .stars button.on { color: var(--coral); }
+  .saved { font-size: 12px; color: var(--ok); }
+  .saved.err { color: var(--err); }
+  .scores { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--hair); border-radius: 8px; }
+  .scores div { padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .scores div + div { border-left: 1px solid var(--soft); }
+  .scores .who { font-size: 11px; color: var(--slate); }
+  .scores .val { font: 400 18px var(--display); }
+  .scores .nt { font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+  .note { display: flex; gap: 8px; }
+  .note input { flex: 1; min-width: 0; height: 44px; padding: 0 12px; border-radius: 4px; border: 1px solid var(--hair); background: #fff; color: var(--ink); font-size: 16px; }
+  .note input:focus { border-color: #9b60aa; outline: none; }
+  .note button, .btn { height: 44px; padding: 0 18px; border-radius: 32px; border: 0; background: var(--primary); color: #fff; font-size: 13px; font-weight: 500; }
+  .note button:disabled { opacity: .5; cursor: default; }
+
+  .hall-row { min-height: 60px; padding: 12px 4px; border-top: 1px solid var(--hair); display: flex; align-items: center; gap: 12px; }
+  .hall-row .rk { font-size: 12px; color: var(--slate); width: 18px; }
+  .hall-row .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .hall-row .nm { font: 400 16px var(--display); }
+  .hall-row .mt { font-size: 12px; color: var(--muted); }
+  .hall-row .av { font: 400 18px var(--display); }
+
+  .empty { padding: 32px 4px; text-align: center; color: var(--muted); font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .status { margin: 8px 16px 0; font-size: 12px; color: var(--slate); }
+  .status:empty { display: none; }
+  footer { margin-top: auto; padding: 24px 20px 32px; background: var(--primary); color: #fff; display: flex; flex-direction: column; gap: 6px; }
+  footer .lbl { font-size: 11px; color: var(--coral); }
+  footer p { margin: 0; font: 400 16px var(--display); }
+  footer small { font-size: 12px; color: #93939f; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="#" aria-label="TTCC 처음으로">
+      <span class="logo" aria-hidden="true">TTCC<i>.</i></span>
+      <span class="bar" aria-hidden="true"></span>
+      <span class="brand-txt"><b>The Thursday Cupping Club</b><span class="mono">EST. 2026 · SEOUL</span></span>
+    </a>
+    <button type="button" class="me-btn" id="meBtn" aria-label="멤버 바꾸기" hidden></button>
+  </nav>
+
+  <section class="card-stone" id="picker" hidden aria-labelledby="pickerTitle">
+    <div>
+      <h2 id="pickerTitle">누구세요?</h2>
+      <p>처음 한 번만 고르면 이 폰이 기억해요.</p>
+    </div>
+    <div class="pick" role="radiogroup" aria-labelledby="pickerTitle" id="pick"></div>
+  </section>
+
+  <section class="drop" id="dropBox" hidden>
+    <div class="drop-top">
+      <div>
+        <div class="lbl mono" id="dropLbl">LATEST DROP</div>
+        <h1 id="dropTitle">Drop</h1>
+      </div>
+      <div class="mine" id="mine">내 평가<b id="mineN">0/0</b></div>
+    </div>
+    <div class="track" aria-hidden="true"><i id="trackFill"></i></div>
+    <div class="drops" id="drops" aria-label="DROP 고르기"></div>
+  </section>
+
+  <div class="tabs" role="tablist" aria-label="보기">
+    <button type="button" role="tab" id="tabDrop" aria-selected="true" aria-controls="viewDrop">이번 DROP</button>
+    <button type="button" role="tab" id="tabHall" aria-selected="false" aria-controls="viewHall">Hall of Fame</button>
+  </div>
+  <div class="status" id="status" role="status" aria-live="polite"></div>
+
+  <section class="list" id="viewDrop" role="tabpanel" aria-labelledby="tabDrop"></section>
+  <section class="list" id="viewHall" role="tabpanel" aria-labelledby="tabHall" hidden></section>
+
+  <footer>
+    <div class="lbl mono">RULE 01</div>
+    <p>You do not talk about Cupping Club.</p>
+    <small>IB · HJ · KC — Seoul, 2026</small>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const API = 'https://script.google.com/macros/s/AKfycbzkUXMN1lVGd1rwpKUJiw7ZeJJJGAlD-EnhEfrC5NwiLdvKotnuZYnJPMtM5LUegQgcrQ/exec';
+  const KEY_ME = 'ttcc.me', KEY_DATA = 'ttcc.data';
+  const $ = (s) => document.querySelector(s);
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* 저장 불가 환경 */ } }
+  };
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const pad = (n) => ('0' + n).slice(-2);
+
+  const S = {
+    data: null, me: store.get(KEY_ME), picker: false, tab: 'drop', drop: null, open: null,
+    msg: {},            // 원두별 저장 상태 { text, err }
+    busy: {}            // 원두별 저장 중
+  };
+  if (S.me && ['IB', 'HJ', 'KC'].indexOf(S.me) < 0) S.me = null;
+
+  // ---------- 데이터 ----------
+  try { const c = JSON.parse(store.get(KEY_DATA) || 'null'); if (c && c.ok) S.data = c; } catch (e) { /* 캐시 무시 */ }
+
+  async function load(fresh) {
+    setStatus(S.data ? '' : '불러오는 중…');
+    try {
+      const r = await fetch(API + (fresh ? '?fresh=1' : ''), { cache: 'no-store', credentials: 'omit' });
+      const d = await r.json();
+      if (!d.ok) throw new Error(d.error || '불러오기 실패');
+      S.data = d;
+      store.set(KEY_DATA, JSON.stringify(d));
+      setStatus('');
+    } catch (e) {
+      setStatus(S.data ? '최신 정보를 못 불러와서 저장된 화면을 보여드려요.' : '불러오지 못했어요. 잠시 후 다시 열어주세요.');
+    }
+    applyHash();
+    render();
+  }
+
+  async function send(body) {
+    // text/plain 단순 요청 → 미리 확인(preflight) 없이 Apps Script로 전송
+    const r = await fetch(API, { method: 'POST', body: JSON.stringify(body), credentials: 'omit', redirect: 'follow' });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || '저장 실패');
+    return d;
+  }
+
+  // ---------- 계산 ----------
+  const beans = () => (S.data && S.data.beans) || [];
+  const drops = () => [...new Set(beans().map((b) => b.drop))].sort((a, b) => b - a);
+  const curDrop = () => (S.drop && drops().indexOf(S.drop) >= 0 ? S.drop : drops()[0]);
+  const inDrop = (d) => beans().filter((b) => b.drop === d);
+  const myScore = (b) => (S.me && b.ratings[S.me] ? b.ratings[S.me].score : 0);
+  const avgOf = (b) => { const v = Object.values(b.ratings).map((r) => r.score); return v.length ? v.reduce((a, c) => a + c, 0) / v.length : null; };
+  const daysSince = (iso) => { if (!iso) return null; const t = new Date(iso + 'T00:00:00+09:00'); const n = Math.floor((Date.now() - t.getTime()) / 86400000); return n >= 0 ? n : null; };
+  const metaOf = (b) => {
+    const parts = [b.country || '원두 정보 채우는 중'];
+    const d = daysSince(b.roast);
+    if (d != null) parts.push('로스팅 +' + d + '일');
+    return parts.join(' · ');
+  };
+
+  // ---------- 그리기 ----------
+  function setStatus(t) { $('#status').textContent = t; }
+
+  function render() {
+    // 멤버
+    const showPicker = S.picker || !S.me;
+    $('#picker').hidden = !showPicker;
+    $('#meBtn').hidden = !S.me;
+    $('#meBtn').textContent = (S.me || '') + ' ▾';
+    $('#pick').innerHTML = ['IB', 'HJ', 'KC'].map((id) =>
+      `<button type="button" role="radio" aria-checked="${id === S.me}" data-me="${id}">${id}</button>`).join('');
+
+    // DROP 박스
+    const d = curDrop();
+    const list = d ? inDrop(d) : [];
+    $('#dropBox').hidden = !d;
+    if (d) {
+      const isLatest = d === drops()[0];
+      const arrived = list.map((b) => b.arrived).filter(Boolean).sort()[0];
+      $('#dropLbl').textContent = (isLatest ? 'LATEST DROP' : 'PAST DROP') + (arrived ? ' · ' + arrived.slice(5).replace('-', '.') + ' 도착' : '');
+      $('#dropTitle').textContent = 'Drop ' + pad(d);
+      const done = S.me ? list.filter((b) => myScore(b)).length : 0;
+      $('#mineN').textContent = done + '/' + list.length;
+      $('#trackFill').style.width = (list.length ? Math.round((done / list.length) * 100) : 0) + '%';
+      $('#drops').hidden = drops().length < 2;
+      $('#drops').innerHTML = drops().map((x) => `<button type="button" aria-pressed="${x === d}" data-drop="${x}">${pad(x)}</button>`).join('');
+    }
+
+    // 탭
+    $('#tabDrop').setAttribute('aria-selected', S.tab === 'drop');
+    $('#tabHall').setAttribute('aria-selected', S.tab === 'hall');
+    $('#viewDrop').hidden = S.tab !== 'drop';
+    $('#viewHall').hidden = S.tab !== 'hall';
+
+    renderDrop(list);
+    renderHall();
+  }
+
+  function renderDrop(list) {
+    const el = $('#viewDrop');
+    if (!S.data) { el.innerHTML = ''; return; }
+    if (!list.length) {
+      el.innerHTML = '<div class="empty"><span>첫 DROP을 기다리는 중이에요.</span><span>원두가 도착하면 여기에 올라와요.</span></div>';
+      return;
+    }
+    el.innerHTML = list.map((b) => {
+      const mine = myScore(b);
+      const open = S.open === b.id;
+      const status = !S.me ? '보기' : mine ? '★ ' + mine : '평가하기';
+      const others = ['IB', 'HJ', 'KC'].filter((w) => w !== S.me && b.ratings[w]).length;
+      const msg = S.msg[b.id];
+      const facts = [
+        b.origin && esc(b.origin),
+        b.varieties.length && esc(b.varieties.join(' · ')),
+        b.process && esc(b.process),
+        b.url && `<a href="${esc(b.url)}" target="_blank" rel="noopener">SEY 상품 페이지 ↗</a>`
+      ].filter(Boolean).map((x) => `<span>${x}</span>`).join('');
+      let panel = '';
+      if (open) {
+        panel = `<div class="panel" id="p-${b.id}">
+          ${b.notes.length ? `<div class="chips">${b.notes.map((n) => `<span>${esc(n)}</span>`).join('')}</div>` : ''}
+          ${facts ? `<div class="facts">${facts}</div>` : ''}
+          ${!S.me ? '<div class="cap">먼저 위에서 누구인지 골라주세요.</div>' : `
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div class="cap">내 점수 · ${S.me}</div>
+              <div class="stars" role="radiogroup" aria-label="별점">
+                ${[1, 2, 3, 4, 5].map((n) => `<button type="button" role="radio" aria-checked="${n === mine}" aria-label="${n}점" class="${n <= mine ? 'on' : ''}" data-rate="${b.id}" data-n="${n}" ${S.busy[b.id] ? 'disabled' : ''}>★</button>`).join('')}
+              </div>
+            </div>
+            ${msg ? `<div class="saved ${msg.err ? 'err' : ''}">${esc(msg.text)}</div>` : ''}
+            ${mine ? `
+              <div class="scores">${['IB', 'HJ', 'KC'].map((w) => {
+                const r = b.ratings[w];
+                return `<div><span class="who mono">${w}${w === S.me ? ' (나)' : ''}</span><span class="val">${r ? '★ ' + r.score : '—'}</span>${r && r.note ? `<span class="nt">${esc(r.note)}</span>` : ''}</div>`;
+              }).join('')}</div>
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span class="cap">한 줄 감상 (선택)</span>
+                <span class="note">
+                  <input type="text" maxlength="300" id="n-${b.id}" placeholder="예: 식으면서 복숭아가 올라옴" value="${esc((b.ratings[S.me] || {}).note || '')}">
+                  <button type="button" data-note="${b.id}" ${S.busy[b.id] ? 'disabled' : ''}>저장</button>
+                </span>
+              </label>`
+            : `<div class="cap">블라인드 커핑 — 내 점수를 남기면 다른 멤버 점수가 열려요. (${others}명 평가함)</div>`}`}
+        </div>`;
+      }
+      return `<article class="bean" id="b-${b.id}">
+        <button type="button" class="row" aria-expanded="${open}" aria-controls="p-${b.id}" data-open="${b.id}">
+          <span class="no mono">${esc(b.no)}</span>
+          <span class="tx"><span class="nm">${esc(b.name)}</span><span class="mt">${esc(metaOf(b))}</span></span>
+          <span class="st ${mine ? 'done' : ''}">${status}</span>
+        </button>${panel}
+      </article>`;
+    }).join('');
+  }
+
+  function renderHall() {
+    const el = $('#viewHall');
+    const ranked = beans()
+      .filter((b) => Object.keys(b.ratings).length >= 2)
+      .map((b) => ({ b, avg: avgOf(b) }))
+      .sort((x, y) => y.avg - x.avg || Object.keys(y.b.ratings).length - Object.keys(x.b.ratings).length)
+      .slice(0, 10);
+    el.innerHTML = '<div class="cap" style="padding:4px 4px 12px">2명 이상 평가한 원두 · 평균 점수 순</div>' + (ranked.length
+      ? ranked.map((x, i) => `<div class="hall-row">
+          <span class="rk mono">${i + 1}</span>
+          <span class="tx"><span class="nm">${esc(x.b.name)}</span><span class="mt">DROP ${pad(x.b.drop)} · ${esc(x.b.country || '')} · ${Object.keys(x.b.ratings).length}명</span></span>
+          <span class="av">${x.avg.toFixed(1)}</span>
+        </div>`).join('')
+      : '<div class="empty">아직 두 명 이상 평가한 원두가 없어요.</div>');
+  }
+
+  // ---------- 동작 ----------
+  async function rate(id, n, note) {
+    const b = beans().find((x) => x.id === id);
+    if (!b || !S.me || S.busy[id]) return;
+    const prev = b.ratings[S.me] ? Object.assign({}, b.ratings[S.me]) : null;
+    b.ratings[S.me] = { score: n, note: note != null ? note : (prev ? prev.note : '') };
+    S.busy[id] = true;
+    S.msg[id] = { text: '저장 중…' };
+    render();
+    try {
+      await send({ bean: id, member: S.me, score: n, note: note });
+      S.msg[id] = { text: note != null ? '✓ 감상까지 저장됐어요' : '✓ 저장됐어요 · 다시 누르면 바뀌어요' };
+      store.set(KEY_DATA, JSON.stringify(S.data));
+    } catch (e) {
+      if (prev) b.ratings[S.me] = prev; else delete b.ratings[S.me];
+      S.msg[id] = { text: '저장하지 못했어요. 다시 눌러주세요. (' + e.message + ')', err: true };
+    }
+    S.busy[id] = false;
+    render();
+  }
+
+  document.addEventListener('click', (ev) => {
+    const t = ev.target.closest('button, a');
+    if (!t) return;
+    if (t.dataset.me) { S.me = t.dataset.me; store.set(KEY_ME, S.me); S.picker = false; render(); return; }
+    if (t.id === 'meBtn') { S.picker = !S.picker; render(); return; }
+    if (t.id === 'tabDrop' || t.id === 'tabHall') { S.tab = t.id === 'tabDrop' ? 'drop' : 'hall'; render(); return; }
+    if (t.dataset.drop) { S.drop = Number(t.dataset.drop); S.open = null; render(); return; }
+    if (t.dataset.open) {
+      S.open = S.open === t.dataset.open ? null : t.dataset.open;
+      history.replaceState(null, '', S.open ? '#b-' + S.open : location.pathname);
+      render();
+      return;
+    }
+    if (t.dataset.rate) { rate(t.dataset.rate, Number(t.dataset.n)); return; }
+    if (t.dataset.note) {
+      const id = t.dataset.note;
+      const b = beans().find((x) => x.id === id);
+      const v = ($('#n-' + id) || {}).value || '';
+      if (b && myScore(b)) rate(id, myScore(b), v.trim());
+    }
+  });
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter' && ev.target.id && ev.target.id.indexOf('n-') === 0) {
+      const btn = document.querySelector('[data-note="' + ev.target.id.slice(2) + '"]');
+      if (btn) btn.click();
+    }
+  });
+
+  // #b-<원두ID>로 열면 그 원두를 펼침 (노션 '별점 링크')
+  function applyHash() {
+    const m = location.hash.match(/^#b-([0-9a-f]{32})$/);
+    if (!m) return;
+    const b = beans().find((x) => x.id === m[1]);
+    if (!b) return;
+    S.drop = b.drop; S.tab = 'drop'; S.open = b.id;
+    requestAnimationFrame(() => {
+      const el = document.getElementById('b-' + b.id);
+      if (el) { el.scrollIntoView({ block: 'start' }); el.classList.add('focus'); }
+    });
+  }
+  window.addEventListener('hashchange', () => { applyHash(); render(); });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.data) load(false); });
+
+  if (S.data) { applyHash(); render(); }
+  load(true);
+})();
+</script>
+</body>
+</html>
