@@ -112,10 +112,9 @@
   .empty { padding: 32px 4px; text-align: center; color: var(--muted); font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
   .status { margin: 8px 16px 0; font-size: 12px; color: var(--slate); }
   .status:empty { display: none; }
-  footer { margin-top: auto; padding: 24px 20px 32px; background: var(--primary); color: #fff; display: flex; flex-direction: column; gap: 6px; }
-  footer .lbl { font-size: 11px; color: var(--coral); }
-  footer p { margin: 0; font: 400 16px var(--display); }
-  footer small { font-size: 12px; color: #93939f; }
+  footer { margin-top: auto; padding: 20px; border-top: 1px solid var(--soft); display: flex; align-items: center; justify-content: space-between; }
+  footer .f-logo { font-size: 16px; letter-spacing: -0.4px; }
+  footer small { font-size: 12px; color: var(--slate); }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -160,9 +159,8 @@
   <section class="list" id="viewHall" role="tabpanel" aria-labelledby="tabHall" hidden></section>
 
   <footer>
-    <div class="lbl mono">RULE 01</div>
-    <p>You do not talk about Cupping Club.</p>
-    <small>IB · HJ · KC — Seoul, 2026</small>
+    <span class="logo f-logo" aria-label="TTCC">TTCC<i>.</i></span>
+    <small>Seoul, since 2026</small>
   </footer>
 </div>
 
