@@ -93,7 +93,8 @@ function fillBeans() {
     const todo = all.filter((pg) => {
       const pr = pg.properties;
       if (!P.url(pr['상품 URL']) && isUrl_(P.text(pr['원두명']))) return true;   // 원두명 칸에 URL을 붙여넣은 경우
-      return P.url(pr['상품 URL']) && (!P.sel(pr['국가']) || !P.text(pr['원두 번호']) || !P.url(pr['별점 링크']));
+      // SEY가 아닌 원두는 국가를 손으로 적으므로, 국가가 비어 있어도 다시 시도하지 않음
+      return P.url(pr['상품 URL']) && ((isSey_(pr) && !P.sel(pr['국가'])) || !P.text(pr['원두 번호']) || !P.url(pr['별점 링크']));
     });
     if (!todo.length) return;
     const radar = radarIndex_();
@@ -119,8 +120,11 @@ function fillOne_(pg, all, radar) {
   }
 
   // 원두 정보 (국가가 비어 있을 때만 — 손으로 고친 값은 덮어쓰지 않음)
-  if (!P.sel(pr['국가'])) {
-    const info = radar[handleOf_(url)] || shopifyInfo_(url);
+  // SEY: 레이더 목록 → Shopify. 다른 로스터리: Shopify에서 이름만(가격은 통화가 달라 손으로)
+  const sey = isSey_(pr);
+  if (!P.sel(pr['국가']) && (sey || !P.text(pr['원두 번호']))) {
+    let info = sey ? (radar[handleOf_(url)] || shopifyInfo_(url)) : shopifyInfo_(url);
+    if (info && !sey) info.price = null;
     if (info) {
       if (nameEmpty && info.name) props['원두명'] = W.title(info.name);
       if (info.country) props['국가'] = W.sel(info.country);
@@ -219,6 +223,11 @@ function shopifyInfo_(url) {
   }
 }
 
+function isSey_(pr) {
+  const r = (P.sel(pr['로스터리']) || '').trim().toLowerCase();
+  return !r || r === 'sey' || r === 'sey coffee';
+}
+
 function isUrl_(s) { return /^https?:\/\/\S+$/i.test(String(s || '').trim()); }
 
 function handleOf_(url) {
@@ -264,6 +273,7 @@ function clubData_(fresh) {
       arrived: P.date(pr['도착일']),
       price: P.num(pr['가격']),
       url: P.url(pr['상품 URL']),
+      roaster: isSey_(pr) ? '' : P.sel(pr['로스터리']),
       ratings: {}
     };
   }).filter((b) => b.drop && b.name);
