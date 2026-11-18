@@ -16,6 +16,8 @@
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#111114" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317171c'/%3E%3Ccircle cx='46' cy='44' r='6' fill='%23ff7759'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -382,7 +384,7 @@
         b.origin && esc(b.origin),
         b.varieties.length && esc(b.varieties.join(' · ')),
         b.process && esc(b.process),
-        b.url && `<a href="${esc(b.url)}" target="_blank" rel="noopener">상품 페이지 ${ICON.out}<span class="sr"> (새 창)</span></a>`
+        /^https:\/\//i.test(b.url || '') && `<a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">상품 페이지 ${ICON.out}<span class="sr"> (새 창)</span></a>`
       ].filter(Boolean).map((x) => `<span>${x}</span>`).join('');
       let panel = '';
       if (open) {
