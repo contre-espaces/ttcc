@@ -61,15 +61,13 @@
   .mono { font-family: var(--mono); letter-spacing: 0.28px; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-  nav { height: 56px; padding: 0 16px 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--soft); background: var(--bg); position: sticky; top: 0; z-index: 5; }
-  .brand { display: flex; align-items: center; gap: 10px; min-height: 44px; text-decoration: none; }
-  .logo { font-family: 'Google Sans', var(--display); font-weight: 500; font-size: 24px; line-height: 1; letter-spacing: -0.8px; color: var(--primary); }
+  nav { height: 72px; padding: 0 16px 0 20px; gap: 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--soft); background: var(--bg); position: sticky; top: 0; z-index: 5; }
+  .brand { display: flex; align-items: center; gap: 12px; min-height: 44px; min-width: 0; text-decoration: none; }
+  .logo { font-family: 'Google Sans', var(--display); font-weight: 500; font-size: 36px; line-height: 1; letter-spacing: -0.04em; color: var(--primary); }
   .logo i { font-style: normal; color: var(--coral); }
-  .bar { width: 1px; height: 24px; background: var(--hair); }
-  .brand-txt { display: flex; flex-direction: column; gap: 1px; }
-  .brand-txt b { font: 400 15px/1.1 var(--display); letter-spacing: -0.2px; }
-  .brand-txt span { font-size: 11px; color: var(--slate); }
-  .me-btn { height: 44px; padding: 0 16px; display: inline-flex; align-items: center; gap: 4px; border-radius: 30px; border: 1px solid var(--primary); background: transparent; font-size: 13px; font-weight: 500; }
+  .bar { width: 1px; height: 36px; background: var(--hair); flex-shrink: 0; }
+  .brand-txt { display: flex; flex-direction: column; min-width: 0; font: 400 17px/1.15 var(--display); letter-spacing: -0.2px; color: var(--primary); white-space: nowrap; }
+      .me-btn { height: 44px; padding: 0 16px; display: inline-flex; align-items: center; gap: 4px; border-radius: 30px; border: 1px solid var(--primary); background: transparent; font-size: 14px; font-weight: 500; flex-shrink: 0; }
 
   .card-stone { margin: 12px 12px 0; padding: 20px; border-radius: 8px; background: var(--stone); display: flex; flex-direction: column; gap: 12px; }
   .card-stone h2 { margin: 0; font-size: 16px; font-weight: 500; }
@@ -94,7 +92,7 @@
   .sec-h span { font-size: 12px; color: var(--slate); }
 
   .list { padding: 8px 16px 16px; display: flex; flex-direction: column; }
-  .bean { border-top: 1px solid var(--hair); scroll-margin-top: 64px; }
+  .bean { border-top: 1px solid var(--hair); scroll-margin-top: 80px; }
   .bean.focus { animation: flash 2s ease-out; }
   @keyframes flash { 0%, 30% { background: var(--coral-bg); } 100% { background: transparent; } }
   .row { width: 100%; min-height: 72px; padding: 14px 4px; border: 0; background: transparent; text-align: left; display: flex; align-items: center; gap: 12px; }
@@ -178,7 +176,7 @@
     <a class="brand" href="#" translate="no">
       <span class="logo" aria-hidden="true">TTCC<i>.</i></span>
       <span class="bar" aria-hidden="true"></span>
-      <span class="brand-txt"><b>The Thursday Cupping Club</b><span class="mono">EST. 2026</span></span>
+      <span class="brand-txt"><span>The Thursday</span> <span>Cupping Club</span></span>
     </a>
     <span class="me-btn" id="meBtn" translate="no" hidden><span class="sr">나: </span><span id="meTxt"></span></span>
   </nav>
