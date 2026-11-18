@@ -62,17 +62,18 @@
   .pick button { height: 48px; border-radius: 30px; font-size: 15px; font-weight: 500; border: 1px solid var(--primary); background: #fff; color: var(--primary); }
   .pick button[aria-checked="true"] { background: var(--primary); color: #fff; }
 
-  .drop { margin: 12px 12px 0; padding: 20px; border-radius: 22px; background: var(--green); color: #fff; display: flex; flex-direction: column; gap: 14px; }
-  .drop-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
-  .drop .lbl { font-size: 11px; color: #9fd2c4; }
-  .drop h1 { margin: 6px 0 0; font: 400 36px/1 var(--display); letter-spacing: -0.8px; }
-  .drop .mine { font-size: 12px; color: #cfe3dd; text-align: right; font-family: var(--mono); }
-  .drop .mine b { display: block; font: 400 22px var(--display); color: #fff; font-variant-numeric: tabular-nums; }
-  .track { height: 4px; border-radius: 9999px; background: rgba(255,255,255,0.18); overflow: hidden; }
-  .track i { display: block; height: 100%; width: 100%; border-radius: 9999px; background: var(--coral); transform: scaleX(0); transform-origin: left center; transition: transform 300ms var(--ease); }
+  .drop { padding: 36px 20px 28px; display: flex; flex-direction: column; gap: 22px; border-bottom: 1px solid var(--soft); }
+  .drop .lbl { font-size: 12px; letter-spacing: 1px; color: var(--slate); }
+  .drop h1 { margin: 0; font: 500 76px/.9 'Google Sans', var(--display); letter-spacing: -3.2px; color: var(--primary); padding-bottom: 6px; }
+  .drop h1 i { font-style: normal; color: var(--coral); }
+  .drop-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .drop .mine { font: 12px var(--mono); letter-spacing: 1px; color: var(--slate); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .drop .mine b { font-weight: 400; color: var(--primary); }
+  .track { flex: 0 1 180px; height: 12px; border-radius: 9999px; background: var(--stone); overflow: hidden; }
+  .track i { display: block; height: 100%; width: 100%; border-radius: 9999px; background: var(--green); transform: scaleX(0); transform-origin: left center; transition: transform 300ms var(--ease); }
   .drops { display: flex; flex-wrap: wrap; gap: 6px; }
-  .drops button { height: 44px; min-width: 52px; font-variant-numeric: tabular-nums; padding: 0 12px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.35); background: transparent; color: #fff; font-size: 12px; font-family: var(--mono); }
-  .drops button[aria-pressed="true"] { background: #fff; color: var(--green); border-color: #fff; }
+  .drops button { height: 44px; min-width: 56px; padding: 0 14px; border-radius: 30px; border: 1px solid var(--hair); background: transparent; color: var(--muted); font: 12px var(--mono); letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+  .drops button[aria-pressed="true"] { background: var(--primary); color: #fff; border-color: var(--primary); }
 
   .sec-h { margin: 28px 20px 4px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
   .sec-h h2 { margin: 0; font: 400 22px/1.2 var(--display); letter-spacing: -0.3px; }
@@ -133,7 +134,8 @@
   @media (hover: hover) and (pointer: fine) {
     .pick button:hover, .me-btn:hover { transform: translateY(-1px); background: #f4f4f5; }
     .pick button[aria-checked="true"]:hover, .note button:hover { transform: translateY(-1px); background: #2e2e36; }
-    .drops button:hover { transform: translateY(-1px); border-color: #fff; }
+    .drops button:hover { transform: translateY(-1px); border-color: var(--primary); color: var(--primary); }
+    .drops button[aria-pressed="true"]:hover { color: #fff; background: #2e2e36; }
     .row:hover .nm { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
     .row:hover .st:not(.done) { background: var(--primary); color: #fff; }
     .stars button:hover { color: var(--coral-soft); }
@@ -145,7 +147,7 @@
   .drop h1 { overflow: hidden; }
   .drop h1 > span { display: inline-block; }
   html.m-enter:not(.m-enter-done) .drop h1 > span, html.m-enter .drop h1.in > span { animation: mask 700ms var(--ease-enter) both; }
-  html.m-enter .drop .mine, html.m-enter .drop .track, html.m-enter .drop .lbl { animation: rise 520ms var(--ease-enter) 180ms both; }
+  html.m-enter .drop .drop-foot, html.m-enter .drop .lbl { animation: rise 520ms var(--ease-enter) 180ms both; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition-property: color, background-color, border-color, opacity !important; }
   }
@@ -174,14 +176,12 @@
   </section>
 
   <section class="drop" id="dropBox" hidden>
-    <div class="drop-top">
-      <div>
-        <div class="lbl mono" id="dropLbl">LATEST DROP</div>
-        <h1><span id="dropTitle">Drop</span></h1>
-      </div>
-      <div class="mine" id="mine">내 평가<b id="mineN">0/0</b></div>
+    <div class="lbl mono" id="dropLbl">LATEST DROP</div>
+    <h1 translate="no"><span><span id="dropTitle">Drop</span><i aria-hidden="true">.</i></span></h1>
+    <div class="drop-foot">
+      <div class="mine" id="mine">내 평가 <b id="mineN">0/0</b></div>
+      <div class="track" aria-hidden="true"><i id="trackFill"></i></div>
     </div>
-    <div class="track" aria-hidden="true"><i id="trackFill"></i></div>
     <div class="drops" id="drops" aria-label="DROP 고르기"></div>
   </section>
 
@@ -321,7 +321,7 @@
     if (d) {
       const isLatest = d === drops()[0];
       const arrived = list.map((b) => b.arrived).filter(Boolean).sort()[0];
-      $('#dropLbl').textContent = (isLatest ? 'LATEST DROP' : 'PAST DROP') + (arrived ? ' · ' + dayText(arrived) + ' 도착' : '');
+      $('#dropLbl').textContent = (isLatest ? 'LATEST DROP' : 'PAST DROP') + (arrived ? ' · ' + dayText(arrived) : '') + ' · SEY';
       $('#dropTitle').textContent = 'Drop ' + pad(d);
       const done = S.me ? list.filter((b) => myScore(b)).length : 0;
       $('#mineN').textContent = done + '/' + list.length;
