@@ -284,7 +284,8 @@
   const avgOf = (b) => { const v = Object.values(b.ratings).map((r) => r.score); return v.length ? v.reduce((a, c) => a + c, 0) / v.length : null; };
   const daysSince = (iso) => { if (!iso) return null; const t = new Date(iso + 'T00:00:00+09:00'); const n = Math.floor((Date.now() - t.getTime()) / 86400000); return n >= 0 ? n : null; };
   const metaOf = (b) => {
-    const parts = [b.country || '원두 정보 채우는 중'];
+    const parts = [b.country || (b.roaster ? '' : '원두 정보 채우는 중')].filter(Boolean);
+    if (b.roaster) parts.unshift(b.roaster);
     const d = daysSince(b.roast);
     if (d != null) parts.push('로스팅 +' + d + '일');
     return parts.join(' · ');
@@ -344,7 +345,7 @@
     if (d) {
       const isLatest = d === drops()[0];
       const arrived = list.map((b) => b.arrived).filter(Boolean).sort()[0];
-      $('#dropLbl').textContent = [isLatest ? '최신' : '지난 DROP', arrived ? dayText(arrived) + ' 도착' : '', 'SEY'].filter(Boolean).join(' · ');
+      $('#dropLbl').textContent = [isLatest ? '최신' : '지난 DROP', arrived ? dayText(arrived) + ' 도착' : ''].filter(Boolean).join(' · ');
       $('#dropTitle').textContent = 'Drop ' + pad(d);
       const done = S.me ? list.filter((b) => myScore(b)).length : 0;
       $('#mineN').textContent = done + '/' + list.length;
@@ -381,7 +382,7 @@
         b.origin && esc(b.origin),
         b.varieties.length && esc(b.varieties.join(' · ')),
         b.process && esc(b.process),
-        b.url && `<a href="${esc(b.url)}" target="_blank" rel="noopener">SEY 상품 페이지 ${ICON.out}<span class="sr"> (새 창)</span></a>`
+        b.url && `<a href="${esc(b.url)}" target="_blank" rel="noopener">상품 페이지 ${ICON.out}<span class="sr"> (새 창)</span></a>`
       ].filter(Boolean).map((x) => `<span>${x}</span>`).join('');
       let panel = '';
       if (open) {
@@ -431,7 +432,7 @@
     el.innerHTML = (ranked.length
       ? ranked.map((x, i) => `<div class="hall-row">
           <span class="rk mono num">${i + 1}</span>
-          <span class="tx"><span class="nm" translate="no">${esc(x.b.name)}</span><span class="mt">DROP ${pad(x.b.drop)} · ${esc(x.b.country || '')} · ${Object.keys(x.b.ratings).length}명</span></span>
+          <span class="tx"><span class="nm" translate="no">${esc(x.b.name)}</span><span class="mt">${[`DROP ${pad(x.b.drop)}`, x.b.roaster, x.b.country, Object.keys(x.b.ratings).length + '명'].filter(Boolean).map(esc).join(' · ')}</span></span>
           <span class="av">${fmtNum.format(x.avg)}</span>
         </div>`).join('')
       : '<div class="empty">두 명 이상 평가한 원두가 생기면 여기에 올라와요.</div>');
