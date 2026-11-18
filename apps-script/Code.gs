@@ -7,6 +7,7 @@
  *  3) doPost     : 페이지에서 남긴 별점·한 줄 감상을 노션 별점 DB에 저장 (원두+멤버당 1행, 다시 누르면 덮어씀)
  *
  * 준비물: 스크립트 속성 NOTION_TOKEN (노션 내부 통합 시크릿)
+ *         스크립트 속성 MEMBER_KEYS (멤버별 개인 링크 키 — issueKeys()로 생성, 저장소에는 절대 올리지 않음)
  */
 
 const CFG = {
@@ -242,6 +243,7 @@ function doGet(e) {
   let out;
   try {
     if (p.api === 'rate') out = saveRating_(p);          // JSONP 대비: GET으로도 저장 가능
+    else if (p.api === 'whoami') out = memberOf_(p.key) ? { ok: true, member: memberOf_(p.key) } : { ok: false, error: 'KEY' };
     else out = clubData_(p.fresh === '1');
   } catch (err) {
     out = { ok: false, error: String(err.message || err) };
@@ -315,7 +317,8 @@ function doPost(e) {
 
 function saveRating_(b) {
   const bean = normId_(b.bean);
-  const member = String(b.member || '');
+  const member = memberOf_(b.key);                         // 멤버는 개인 링크 키로만 정해짐 (보낸 member 값은 무시)
+  if (!member) throw new Error('KEY');
   const score = Number(b.score);
   if (!/^[0-9a-f]{32}$/.test(bean)) throw new Error('원두 ID가 올바르지 않습니다');
   if (CFG.MEMBERS.indexOf(member) < 0) throw new Error('멤버가 올바르지 않습니다');
@@ -351,6 +354,46 @@ function saveRating_(b) {
   CacheService.getScriptCache().remove('club');
   return { ok: true };
 }
+
+// ---------------------------------------------------------------- 개인 링크 키
+
+function keys_() {
+  try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('MEMBER_KEYS') || '{}'); } catch (e) { return {}; }
+}
+
+/** 키 → 멤버 (없으면 '') */
+function memberOf_(key) {
+  key = String(key || '');
+  if (!/^[0-9a-f]{24}$/.test(key)) return '';
+  const ks = keys_();
+  for (const m in ks) if (ks[m] === key && CFG.MEMBERS.indexOf(m) >= 0) return m;
+  return '';
+}
+
+function newKey_() { return Utilities.getUuid().replace(/-/g, '').slice(0, 24); }
+
+function logLinks_(ks, only) {
+  CFG.MEMBERS.filter((m) => !only || m === only).forEach((m) => console.log(m + '  ' + CFG.SITE + '/#key=' + ks[m]));
+}
+
+/** 처음 1회: 세 멤버의 개인 링크를 만들고 실행 로그에 출력 (이미 있으면 그대로 보여줌) */
+function issueKeys() {
+  const ks = keys_();
+  CFG.MEMBERS.forEach((m) => { if (!ks[m]) ks[m] = newKey_(); });
+  PropertiesService.getScriptProperties().setProperty('MEMBER_KEYS', JSON.stringify(ks));
+  logLinks_(ks);
+}
+
+/** 링크가 샜을 때: 해당 멤버 키만 새로 발급 (이전 링크는 즉시 무효) */
+function reissue_(m) {
+  const ks = keys_();
+  ks[m] = newKey_();
+  PropertiesService.getScriptProperties().setProperty('MEMBER_KEYS', JSON.stringify(ks));
+  logLinks_(ks, m);
+}
+function reissueIB() { reissue_('IB'); }
+function reissueHJ() { reissue_('HJ'); }
+function reissueKC() { reissue_('KC'); }
 
 // ---------------------------------------------------------------- 공통
 
