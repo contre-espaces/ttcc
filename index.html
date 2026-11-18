@@ -183,8 +183,8 @@
 
   <section class="card-stone" id="picker" hidden aria-labelledby="pickerTitle">
     <div>
-      <h2 id="pickerTitle">둘러보는 중이에요</h2>
-      <p id="pickerTxt">평가하려면 카톡으로 받은 <b>개인 링크</b>를 한 번 열어주세요. 그 뒤로는 이 폰이 기억해요.</p>
+      <h2 id="pickerTitle">지금은 구경만 할 수 있어요</h2>
+      <p id="pickerTxt">카톡으로 받은 내 링크로 한 번만 들어오면 별점을 남길 수 있어요.</p>
     </div>
   </section>
 
@@ -355,7 +355,7 @@
     $('#picker').hidden = !!S.me;
     $('#meBtn').hidden = !S.me;
     $('#meTxt').textContent = S.me || '';
-    if (S.badKey) $('#pickerTxt').textContent = '이 개인 링크는 더 이상 쓸 수 없어요. 새 링크를 받아 열어주세요.';
+    if (S.badKey) $('#pickerTxt').textContent = '이 링크는 이제 안 돼요. 새 링크를 받아주세요.';
 
     // DROP 박스
     const d = curDrop();
@@ -408,7 +408,7 @@
         panel = `<div class="panel" id="p-${b.id}">
           ${b.notes.length ? `<div class="chips">${b.notes.map((n) => `<span>${esc(n)}</span>`).join('')}</div>` : ''}
           ${facts ? `<div class="facts">${facts}</div>` : ''}
-          ${!S.me ? '<div class="cap">개인 링크로 열면 평가할 수 있어요.</div>' : `
+          ${!S.me ? '<div class="cap">내 링크로 들어오면 별점을 남길 수 있어요.</div>' : `
             <div style="display:flex;flex-direction:column;gap:6px">
               <div class="cap">내 점수 · ${S.me}</div>
               <div class="stars" role="radiogroup" aria-label="별점">
@@ -477,7 +477,7 @@
       console.warn('TTCC 저장 실패:', e);
       const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
       if (/KEY/.test(e.message)) { S.badKey = true; S.me = null; S.key = null; store.del(KEY_KEY); store.del(KEY_ME); }
-      S.msg[id] = { text: S.badKey ? '개인 링크가 바뀌었어요. 새 링크로 다시 열어주세요.' : offline ? '인터넷 연결을 확인하고 다시 눌러주세요.' : '저장하지 못했어요. 잠시 후 다시 눌러주세요.', err: true };
+      S.msg[id] = { text: S.badKey ? '링크가 바뀌었어요. 새 링크로 다시 들어와 주세요.' : offline ? '인터넷 연결을 확인하고 다시 눌러주세요.' : '저장하지 못했어요. 잠시 후 다시 눌러주세요.', err: true };
       announce('저장하지 못했어요. 다시 눌러주세요.');
     }
     S.busy[id] = false;
