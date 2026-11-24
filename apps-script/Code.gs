@@ -15,6 +15,7 @@ const CFG = {
   BEANS_DB: '41c7b44e699a81bd94c2c005d645ac6b',
   RATINGS_DB: '41c7b44e699a8161b384cd1372c74fae',
   MEMBERS: ['IB', 'HJ', 'KC'],
+  ADDERS: ['IB'],          // 레이더에서 TTCC에 담을 수 있는 멤버
   RADAR_API: 'https://script.google.com/macros/s/AKfycbyltkPYpuBj-ws6yuGGHawNtM4B5RT2jitwXkcC-qxO00G8c7a8uJSM-EY5P12B0J1Y/exec?api=lineup&part=list',
   SITE: 'https://ttcc.inbeom.com',
   CACHE_SEC: 120
@@ -420,6 +421,7 @@ function previewBean_(url) {
 function addBean_(b) {
   const member = memberOf_(b.key);
   if (!member) throw new Error('KEY');
+  if (CFG.ADDERS.indexOf(member) < 0) throw new Error('NOT_ADDER');
   const drop = Number(b.drop);
   if (!(drop >= 1 && drop <= 999 && Math.round(drop) === drop)) throw new Error('DROP');
   const kind = String(b.kind || '');
