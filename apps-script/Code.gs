@@ -142,9 +142,8 @@ function fillOne_(pg, all, radar) {
 
   // 기본값
   if (!P.sel(pr['구분'])) props['구분'] = W.sel('구독');
-  if (!P.sel(pr['상태'])) props['상태'] = W.sel('도착');
 
-  // 원두 번호: DROP 안에서 다음 번호 (구독 01-1…, 애드온 01-A1…)
+  // 원두 번호: DROP 안에서 다음 번호 (구독 01-1…, 추가구매 01-P1…)
   const drop = P.num(pr['DROP']);
   if (drop && !P.text(pr['원두 번호'])) {
     const kind = P.sel(pr['구분']) || '구독';
@@ -157,9 +156,9 @@ function fillOne_(pg, all, radar) {
   if (Object.keys(props).length) notion_('patch', 'pages/' + pg.id, { properties: props });
 }
 
-const KIND_PREFIX = { '구독': '', '애드온': 'A', '추가구매': 'P' };
+const KIND_PREFIX = { '구독': '', '추가구매': 'P' };
 
-function nextNo_(drop, kind, all, selfId) {   // 구독 01-1 · 애드온 01-A1 · 추가구매 01-P1
+function nextNo_(drop, kind, all, selfId) {   // 구독 01-1 · 추가구매 01-P1
   const dd = ('0' + drop).slice(-2);
   const pre = KIND_PREFIX[kind] || '';
   const re = new RegExp('-' + pre + '(\\d+)$');
@@ -299,7 +298,6 @@ function clubData_(fresh) {
       drop: P.num(pr['DROP']),
       no: P.text(pr['원두 번호']),
       kind: P.sel(pr['구분']),
-      status: P.sel(pr['상태']),
       country: P.sel(pr['국가']),
       origin: P.text(pr['지역/생산자']),
       varieties: P.multi(pr['품종']),
@@ -391,7 +389,7 @@ function saveRating_(b) {
 
 // ---------------------------------------------------------------- 4) 레이더에서 TTCC에 담기
 
-const KINDS = ['구독', '애드온', '추가구매'];
+const KINDS = ['구독', '추가구매'];
 const ADD_LIMIT_PER_DAY = 10;
 
 function findByUrl_(all, url) {
@@ -449,7 +447,6 @@ function addBean_(b) {
       '상품 URL': W.url(hit.url || b.url),
       'DROP': W.num(drop),
       '구분': W.sel(kind),
-      '상태': W.sel('미도착'),
       '담은 사람': W.sel(member)
     } });
     cnt[member] = (cnt[member] || 0) + 1;
