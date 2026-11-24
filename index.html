@@ -318,7 +318,7 @@
   <footer>
     <span class="logo f-logo" aria-label="TTCC">TTCC<i>.</i></span>
     <small>Since 2026</small>
-    <a class="radar-link" href="https://coffee.inbeom.com/#ttcc">레이더에서 원두 고르기</a>
+    <a class="radar-link" id="radarLink" href="https://coffee.inbeom.com/#ttcc" hidden>레이더에서 원두 고르기</a>
   </footer>
 </div>
 
@@ -397,8 +397,10 @@
 
   // ---------- 레이더에서 담기 (#add=<상품 주소>) ----------
   const KINDS = ['구독', '애드온', '추가구매'];
+  const ADDERS = ['IB'];   // 레이더에서 담기 (서버도 같은 규칙으로 막음)
   const ADD_ERR = {
     KEY: '멤버 링크로 들어온 폰에서만 담을 수 있어요.',
+    NOT_ADDER: '원두 담기는 IB만 할 수 있어요.',
     NOT_IN_RADAR: '레이더에서 찾을 수 없는 원두예요.',
     LIMIT: '오늘은 더 담을 수 없어요. 하루 10개까지예요.',
     DROP: 'DROP 번호를 다시 골라주세요.',
@@ -471,6 +473,7 @@
     else if (a.phase === 'error') body = `<p class="msg err">${esc(a.msg)}</p><div class="add-act">${close}</div>`;
     else if (a.phase === 'dup') body = `${bean}<p class="msg">이미 TTCC에 담긴 원두예요.</p><div class="add-act">${close}<button type="button" class="btn" data-addgo="${esc(a.dup || '')}">보러 가기</button></div>`;
     else if (!S.key) body = `${bean}<p class="msg">${ADD_ERR.KEY}</p><div class="add-act">${close}</div>`;
+    else if (S.me && ADDERS.indexOf(S.me) < 0) body = `${bean}<p class="msg">${ADD_ERR.NOT_ADDER}</p><div class="add-act">${close}</div>`;
     else if (a.phase === 'done') body = `${bean}<p class="msg ok">담았어요. 원두 목록으로 이동해요…</p>`;
     else body = `${bean}
       <div class="add-row"><span>DROP</span><span class="stepper">
@@ -551,6 +554,7 @@
 
   function paint() {
     renderAdd();
+    $('#radarLink').hidden = !(S.me && ADDERS.indexOf(S.me) >= 0);
     // 멤버
     $('#picker').hidden = !!S.me;
     $('#meBtn').hidden = !S.me;
