@@ -122,10 +122,12 @@ function fillOne_(pg, all, radar) {
 
   // 원두 정보 (국가가 비어 있을 때만 — 손으로 고친 값은 덮어쓰지 않음)
   // SEY: 레이더 목록 → Shopify. 다른 로스터리: Shopify에서 이름만(가격은 통화가 달라 손으로)
-  const sey = isSey_(pr);
-  if (!P.sel(pr['국가']) && (sey || !P.text(pr['원두 번호']))) {
-    let info = sey ? (radar[handleOf_(url)] || shopifyInfo_(url)) : shopifyInfo_(url);
-    if (info && !sey) info.price = null;
+  const hit = radarFind_(radar, url);                      // 레이더에 있는 원두면 로스터리와 상관없이 다 채움
+  const sey = hit ? hit.sey : isSey_(pr);
+  if (hit && hit.roaster && !P.sel(pr['로스터리'])) props['로스터리'] = W.sel(hit.roaster);
+  if (!P.sel(pr['국가']) && (sey || hit || !P.text(pr['원두 번호']))) {
+    let info = hit || shopifyInfo_(url);
+    if (info && !sey && !hit) info.price = null;            // 레이더 밖 외국 가게: 통화가 달라 가격은 손으로
     if (info) {
       if (nameEmpty && info.name) props['원두명'] = W.title(info.name);
       if (info.country) props['국가'] = W.sel(info.country);
@@ -154,29 +156,36 @@ function fillOne_(pg, all, radar) {
   if (Object.keys(props).length) notion_('patch', 'pages/' + pg.id, { properties: props });
 }
 
-function nextNo_(drop, kind, all, selfId) {
+const KIND_PREFIX = { '구독': '', '애드온': 'A', '추가구매': 'P' };
+
+function nextNo_(drop, kind, all, selfId) {   // 구독 01-1 · 애드온 01-A1 · 추가구매 01-P1
   const dd = ('0' + drop).slice(-2);
-  const addon = kind === '애드온';
-  const used = all
-    .filter((p) => p.id !== selfId && P.num(p.properties['DROP']) === drop)
-    .map((p) => P.text(p.properties['원두 번호']))
-    .filter(Boolean);
-  const re = addon ? /-A(\d+)$/ : /-(\d+)$/;
+  const pre = KIND_PREFIX[kind] || '';
+  const re = new RegExp('-' + pre + '(\\d+)$');
   let max = 0;
-  used.forEach((n) => { const m = n.match(re); if (m && (addon || !/-A/.test(n))) max = Math.max(max, +m[1]); });
-  return dd + '-' + (addon ? 'A' : '') + (max + 1);
+  all.filter((p) => p.id !== selfId && P.num(p.properties['DROP']) === drop)
+    .map((p) => P.text(p.properties['원두 번호'])).filter(Boolean)
+    .forEach((n) => { const m = n.match(re); if (m) max = Math.max(max, +m[1]); });
+  return dd + '-' + pre + (max + 1);
 }
 
-/** 신상 원두 레이더 API(공개)에서 SEY 목록을 받아 상품 handle로 색인 */
+/** 신상 원두 레이더 API(공개) 색인 — 모든 로스터리를 상품 주소로, SEY는 상품 handle로도 찾음 */
 function radarIndex_() {
-  const idx = {};
+  const idx = { byUrl: {}, byHandle: {} };
   try {
     const res = UrlFetchApp.fetch(CFG.RADAR_API, { muteHttpExceptions: true, followRedirects: true });
     if (res.getResponseCode() !== 200) return idx;
     const d = JSON.parse(res.getContentText());
+    const vs = {};
+    (d.vendors || []).forEach((v) => { vs[v.id] = v; });
     (d.items || []).forEach((it) => {
-      const h = handleOf_(it.url);
-      if (h) idx[h] = fromRadar_(it);
+      const v = vs[it.vendor] || {};
+      const sey = /^sey/i.test(String(v.short || v.name || it.vendor || ''));
+      const info = fromRadar_(it, sey ? '' : roasterName_(v.name || v.short || it.vendor || ''), sey);
+      const u = normUrl_(it.url);
+      if (u) idx.byUrl[u] = info;
+      const h = sey ? handleOf_(it.url) : '';
+      if (h) idx.byHandle[h] = info;
     });
   } catch (e) {
     console.warn('레이더 API 실패: ' + e.message);
@@ -184,7 +193,24 @@ function radarIndex_() {
   return idx;
 }
 
-function fromRadar_(it) {
+/** 'Loquat Coffee' → 'Loquat', 'April Coffee Roasters' → 'April' (노션 라벨을 짧고 한결같게) */
+function roasterName_(n) {
+  n = String(n || '').trim();
+  return n.replace(/\s+(coffee\s+roasters?|roasters?|coffee|caf[eé])$/i, '').trim() || n;
+}
+
+function radarFind_(radar, url) {
+  if (!radar || !url) return null;
+  return radar.byUrl[normUrl_(url)] || (/seycoffee/i.test(url) ? radar.byHandle[handleOf_(url)] : null) || null;
+}
+
+/** 주소 비교용: 프로토콜·www·뒤 슬래시·?·# 무시, 소문자 */
+function normUrl_(u) {
+  const m = String(u || '').trim().match(/^https?:\/\/(?:www\.)?([^/?#]+)([^?#]*)/i);
+  return m ? (m[1] + m[2].replace(/\/+$/, '')).toLowerCase() : '';
+}
+
+function fromRadar_(it, roaster, sey) {
   const vars = Array.isArray(it.vars) && it.vars.length
     ? it.vars.map((x) => x.n)
     : String(it.variety || '').split(/\s*(?:,|\/|&|\band\b|·)\s*/i);
@@ -197,14 +223,19 @@ function fromRadar_(it) {
     varieties: vars.map((s) => s.trim()).filter(Boolean),
     process: it.procKo || it.process || '',
     notes: (it.notes || []).map((s) => String(s).trim()).filter(Boolean),
-    price: basisPrice_(it)
+    price: basisPrice_(it),
+    roaster: roaster || '',
+    sey: !!sey,
+    url: it.url || ''
   };
 }
 
-function basisPrice_(it) {
+function basisPrice_(it) {   // 원화: 원화 판매가, 외화는 레이더가 바꿔 둔 원화(krw)
   const ss = it.sizes || [];
   const b = it.unit && ss[it.unit.i] ? ss[it.unit.i] : ss[0];
-  return b && b.price > 0 ? Number(b.price) : null;
+  if (!b) return null;
+  if (!it.currency || it.currency === 'KRW') return b.price > 0 ? Number(b.price) : null;
+  return b.krw > 0 ? Math.round(Number(b.krw)) : null;
 }
 
 /** 레이더 목록에 없을 때: Shopify 공개 상품 정보(.js)에서 이름·가격만 */
@@ -243,6 +274,8 @@ function doGet(e) {
   let out;
   try {
     if (p.api === 'rate') out = saveRating_(p);          // JSONP 대비: GET으로도 저장 가능
+    else if (p.api === 'preview') out = previewBean_(p.url);
+    else if (p.api === 'add') out = addBean_(p);
     else if (p.api === 'whoami') out = memberOf_(p.key) ? { ok: true, member: memberOf_(p.key) } : { ok: false, error: 'KEY' };
     else out = clubData_(p.fresh === '1');
   } catch (err) {
@@ -298,8 +331,8 @@ function clubData_(fresh) {
 }
 
 function sortNo_(no) {
-  const m = String(no || '').match(/-(A?)(\d+)$/);
-  return m ? (m[1] ? 100 : 0) + Number(m[2]) : 999;
+  const m = String(no || '').match(/-([AP]?)(\d+)$/);
+  return m ? ({ '': 0, A: 100, P: 200 }[m[1]]) + Number(m[2]) : 999;
 }
 
 // ---------------------------------------------------------------- 3) 별점 저장 (POST)
@@ -308,7 +341,7 @@ function doPost(e) {
   let out;
   try {
     const body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
-    out = saveRating_(body);
+    out = body.api === 'add' ? addBean_(body) : saveRating_(body);
   } catch (err) {
     out = { ok: false, error: String(err.message || err) };
   }
@@ -353,6 +386,78 @@ function saveRating_(b) {
   }
   CacheService.getScriptCache().remove('club');
   return { ok: true };
+}
+
+// ---------------------------------------------------------------- 4) 레이더에서 TTCC에 담기
+
+const KINDS = ['구독', '애드온', '추가구매'];
+const ADD_LIMIT_PER_DAY = 10;
+
+function findByUrl_(all, url) {
+  const u = normUrl_(url);
+  return u ? all.find((pg) => normUrl_(P.url(pg.properties['상품 URL'])) === u) || null : null;
+}
+
+function latestDrop_(all) {
+  return all.reduce((m, pg) => Math.max(m, P.num(pg.properties['DROP']) || 0), 0);
+}
+
+/** 담기 전 확인 화면용 (공개 레이더 정보만) — 레이더에 없는 주소는 found:false */
+function previewBean_(url) {
+  const radar = radarIndex_();
+  const hit = radarFind_(radar, url);
+  const all = queryAll_(CFG.BEANS_DB);
+  const dup = findByUrl_(all, url);
+  return {
+    ok: true, found: !!hit,
+    item: hit ? { name: hit.name, roaster: hit.sey ? 'SEY' : hit.roaster, country: hit.country, process: hit.process, notes: hit.notes, price: hit.price, sey: hit.sey } : null,
+    dup: dup ? normId_(dup.id) : null,
+    latestDrop: latestDrop_(all)
+  };
+}
+
+/** 멤버 키 확인 → 레이더에 있는 원두만 → 중복·하루 횟수 확인 → 노션에 한 줄 + 바로 채우기 */
+function addBean_(b) {
+  const member = memberOf_(b.key);
+  if (!member) throw new Error('KEY');
+  const drop = Number(b.drop);
+  if (!(drop >= 1 && drop <= 999 && Math.round(drop) === drop)) throw new Error('DROP');
+  const kind = String(b.kind || '');
+  if (KINDS.indexOf(kind) < 0) throw new Error('KIND');
+  const radar = radarIndex_();
+  const hit = radarFind_(radar, b.url);
+  if (!hit) throw new Error('NOT_IN_RADAR');
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const all = queryAll_(CFG.BEANS_DB);
+    const dup = findByUrl_(all, hit.url || b.url);
+    if (dup) return { ok: false, error: 'DUP', id: normId_(dup.id) };
+
+    const sp = PropertiesService.getScriptProperties();
+    const today = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
+    let cnt = {};
+    try { cnt = JSON.parse(sp.getProperty('ADD_COUNT') || '{}'); } catch (e) { cnt = {}; }
+    if (cnt.day !== today) cnt = { day: today };
+    if ((cnt[member] || 0) >= ADD_LIMIT_PER_DAY) throw new Error('LIMIT');
+
+    const page = notion_('post', 'pages', { parent: { database_id: CFG.BEANS_DB }, properties: {
+      '원두명': W.title(hit.name || '새 원두'),
+      '상품 URL': W.url(hit.url || b.url),
+      'DROP': W.num(drop),
+      '구분': W.sel(kind),
+      '상태': W.sel('미도착'),
+      '담은 사람': W.sel(member)
+    } });
+    cnt[member] = (cnt[member] || 0) + 1;
+    sp.setProperty('ADD_COUNT', JSON.stringify(cnt));
+    try { fillOne_(page, all.concat([page]), radar); } catch (e) { console.error('담은 뒤 채우기 실패: ' + e.message); }
+    CacheService.getScriptCache().remove('club');
+    return { ok: true, id: normId_(page.id) };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // ---------------------------------------------------------------- 개인 링크 키
@@ -423,7 +528,7 @@ function testNotion() {
     const n = queryAll_(id).length;
     console.log('OK  ' + P.text({ title: db.title }) + ' — ' + n + '행');
   });
-  console.log('레이더 원두 ' + Object.keys(radarIndex_()).length + '종 확인');
+  console.log('레이더 원두 ' + Object.keys(radarIndex_().byUrl).length + '종 확인');
 }
 
 /** 페이지 데이터 미리보기 */
