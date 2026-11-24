@@ -143,7 +143,20 @@
   .row .no { font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 500; color: var(--slate); width: 40px; flex-shrink: 0; }
   .row .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
   .row .nm { font: 500 16px/1.3 var(--font); color: var(--primary); text-wrap: pretty; overflow-wrap: anywhere; }
+  .row .mt, .hall-row .mt { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; }
   .row .mt { font-size: 13px; color: var(--muted-foreground); }
+  /* 로스터리 라벨 (shadcn Badge) */
+  .rt { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 9999px; font-size: 11px; font-weight: 500; letter-spacing: .01em; color: #1c1712;
+    background: color-mix(in srgb, var(--rt) 92%, transparent); border: 1px solid rgba(255,255,255,.55); box-shadow: inset 0 1px 0 rgba(255,255,255,.5); white-space: nowrap; }
+  /* 로스터리 분류 칩 (shadcn ToggleGroup, 유리) */
+  .rfil { margin: 0 0 10px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 12px; scroll-padding: 0 12px; }
+  .rfil::-webkit-scrollbar { display: none; }
+  .rfil button { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border-radius: 9999px; font-size: 14px; font-weight: 500; color: var(--primary);
+    background: var(--glass-sub); border: 1px solid var(--glass-edge); box-shadow: var(--glass-hi); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  .rfil button i { width: 8px; height: 8px; border-radius: 50%; background: var(--rt); box-shadow: 0 0 0 1px rgba(28,23,18,.15); }
+  .rfil button b { font-weight: 400; opacity: .7; }
+  .rfil button[aria-pressed="true"] { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
+  .rfil button:active { transform: scale(.97); }
   /* shadcn Button outline (glass) / Badge */
   .st { flex-shrink: 0; display: inline-flex; align-items: center; height: 36px; font-size: 13px; font-weight: 500; padding: 0 14px; border-radius: 9999px; color: var(--primary); white-space: nowrap; background: var(--glass-sub); }
   .st.done { background: linear-gradient(140deg, #ffc9a2, #fca06a); color: var(--sig-ink); border-color: rgba(255,255,255,.6); box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 6px 16px -6px rgba(240,120,60,.55); }
@@ -269,6 +282,7 @@
   <main id="main" tabindex="-1">
     <section aria-labelledby="hLine">
       <div class="sec-h"><h2 id="hLine">Line-up</h2><span id="lineCount" class="num"></span></div>
+      <div class="rfil" id="rfil" role="group" aria-label="로스터리" hidden></div>
       <div class="list" id="viewDrop"></div>
     </section>
     <section aria-labelledby="hHall">
@@ -302,7 +316,7 @@
   };
 
   const S = {
-    data: null, me: store.get(KEY_ME), tab: 'drop', drop: null, open: null,
+    data: null, me: store.get(KEY_ME), tab: 'drop', drop: null, open: null, roaster: 'all',
     msg: {},            // 원두별 저장 상태 { text, err }
     draft: {},          // 저장 전 감상 (다시 그려도 유지)
     busy: {}            // 원두별 저장 중
@@ -371,9 +385,13 @@
   const myScore = (b) => (S.me && b.ratings[S.me] ? b.ratings[S.me].score : 0);
   const avgOf = (b) => { const v = Object.values(b.ratings).map((r) => r.score); return v.length ? v.reduce((a, c) => a + c, 0) / v.length : null; };
   const daysSince = (iso) => { if (!iso) return null; const t = new Date(iso + 'T00:00:00+09:00'); const n = Math.floor((Date.now() - t.getTime()) / 86400000); return n >= 0 ? n : null; };
+  // 로스터리 라벨: 노션 '로스터리' 칸이 비어 있으면 SEY. 이름마다 늘 같은 색
+  const roasterOf = (b) => String(b.roaster || '').trim() || 'SEY';
+  const RT = ['#fcab79', '#a8d8c4', '#f4d35e', '#d4b8ec', '#f4a0b4', '#e8c79e'];
+  const rtColor = (n) => { if (n === 'SEY') return RT[0]; let h = 0; for (const c of n) h = (h * 31 + c.codePointAt(0)) >>> 0; return RT[1 + (h % (RT.length - 1))]; };
+  const rtTag = (b) => { const n = roasterOf(b); return `<span class="rt" style="--rt:${rtColor(n)}" translate="no">${esc(n)}</span>`; };
   const metaOf = (b) => {
     const parts = [b.country || (b.roaster ? '' : '원두 정보 채우는 중')].filter(Boolean);
-    if (b.roaster) parts.unshift(b.roaster);
     const d = daysSince(b.roast);
     if (d != null) parts.push('로스팅 +' + d + '일');
     return parts.join(' · ');
@@ -439,9 +457,18 @@
       $('#drops').innerHTML = drops().map((x) => `<button type="button" aria-pressed="${x === d}" data-drop="${x}">${pad(x)}</button>`).join('');
     }
 
-    $('#lineCount').textContent = list.length ? list.length + '봉' : '';
+    // 로스터리 분류: 이 DROP에 로스터리가 둘 이상일 때만 칩을 보여줌
+    const rs = [...new Set(list.map(roasterOf))].sort((a, b) => (a === 'SEY' ? -1 : b === 'SEY' ? 1 : a.localeCompare(b, 'ko')));
+    if (S.roaster !== 'all' && rs.indexOf(S.roaster) < 0) S.roaster = 'all';
+    $('#rfil').hidden = rs.length < 2;
+    $('#rfil').innerHTML = rs.length < 2 ? '' : ['all'].concat(rs).map((n) => {
+      const c = n === 'all' ? list.length : list.filter((b) => roasterOf(b) === n).length;
+      return `<button type="button" aria-pressed="${S.roaster === n}" data-roaster="${esc(n)}" translate="no">${n === 'all' ? '전체' : `<i style="--rt:${rtColor(n)}"></i>${esc(n)}`}<b class="num">${c}</b></button>`;
+    }).join('');
+    const shown = S.roaster === 'all' ? list : list.filter((b) => roasterOf(b) === S.roaster);
+    $('#lineCount').textContent = shown.length ? shown.length + '봉' : '';
 
-    renderDrop(list);
+    renderDrop(shown);
     renderHall();
   }
 
@@ -500,7 +527,7 @@
       return `<article class="bean" id="b-${b.id}">
         <button type="button" class="row" aria-expanded="${open}" aria-controls="p-${b.id}" data-open="${b.id}">
           <span class="no mono">${esc(b.no)}</span>
-          <span class="tx"><span class="nm" translate="no">${esc(b.name)}</span><span class="mt">${esc(metaOf(b))}</span></span>
+          <span class="tx"><span class="nm" translate="no">${esc(b.name)}</span><span class="mt">${rtTag(b)}<span>${esc(metaOf(b))}</span></span></span>
           <span class="st ${mine ? 'done' : ''}"${mine ? ` aria-label="내 점수 ${mine}점"` : ''}>${status}</span>
         </button>${panel}
       </article>`;
@@ -517,7 +544,7 @@
     el.innerHTML = (ranked.length
       ? ranked.map((x, i) => `<div class="hall-row">
           <span class="rk mono num">${i + 1}</span>
-          <span class="tx"><span class="nm" translate="no">${esc(x.b.name)}</span><span class="mt">${[`DROP ${pad(x.b.drop)}`, x.b.roaster, x.b.country, Object.keys(x.b.ratings).length + '명'].filter(Boolean).map(esc).join(' · ')}</span></span>
+          <span class="tx"><span class="nm" translate="no">${esc(x.b.name)}</span><span class="mt">${rtTag(x.b)}<span>${[`DROP ${pad(x.b.drop)}`, x.b.country, Object.keys(x.b.ratings).length + '명'].filter(Boolean).map(esc).join(' · ')}</span></span></span>
           <span class="av">${fmtNum.format(x.avg)}</span>
         </div>`).join('')
       : '<div class="empty">두 명 이상 평가한 원두가 생기면 여기에 올라와요.</div>');
@@ -554,7 +581,8 @@
     const t = ev.target.closest('button, a');
     if (!t) return;
     if (t.dataset.retry) { S.failed = false; render(); load(true); return; }
-    if (t.dataset.drop) { S.drop = Number(t.dataset.drop); S.open = null; history.replaceState(null, '', '#d-' + S.drop); render(); return; }
+    if (t.dataset.roaster) { S.roaster = t.dataset.roaster; S.open = null; render(); return; }
+    if (t.dataset.drop) { S.drop = Number(t.dataset.drop); S.open = null; S.roaster = 'all'; history.replaceState(null, '', '#d-' + S.drop); render(); return; }
     if (t.dataset.open) {
       S.open = S.open === t.dataset.open ? null : t.dataset.open;
       history.replaceState(null, '', S.open ? '#b-' + S.open : (S.drop ? '#d-' + S.drop : location.pathname));
