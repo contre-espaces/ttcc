@@ -194,6 +194,29 @@
   .note button, .btn { height: 44px; padding: 0 20px; border-radius: 12px; border: 0; background: var(--primary); color: var(--primary-foreground); font-size: 14px; font-weight: 500; box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 8px 20px -8px rgba(30,15,5,.45); }
   .note button[aria-disabled="true"], .stars button[aria-disabled="true"] { opacity: .5; cursor: progress; }
 
+  /* TTCC에 담기 (레이더에서 넘어온 원두) */
+  .add-card { margin: 12px 12px 0; padding: 20px; border-radius: 20px; display: flex; flex-direction: column; gap: 16px;
+    background: var(--glass-strong); border: 1px solid var(--glass-edge); box-shadow: var(--glass-hi), var(--glass-shadow);
+    -webkit-backdrop-filter: blur(24px) saturate(160%); backdrop-filter: blur(24px) saturate(160%); }
+  .add-card h2 { margin: 0; font: 500 18px/1.2 var(--font); color: var(--primary); }
+  .add-card .bean-nm { font: 500 20px/1.25 var(--font); color: var(--primary); overflow-wrap: anywhere; }
+  .add-card .bean-mt { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font-size: 13px; color: var(--muted-foreground); }
+  .add-card .msg { margin: 0; font-size: 14px; color: var(--muted-foreground); }
+  .add-card .msg.err { color: var(--err); }
+  .add-card .msg.ok { color: var(--ok); }
+  .add-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .add-row > span { font-size: 13px; font-weight: 500; color: var(--slate); }
+  .stepper { display: inline-flex; align-items: center; gap: 4px; }
+  .stepper button { width: 44px; height: 44px; border-radius: 9999px; border: 1px solid var(--glass-edge); background: var(--glass-sub); box-shadow: var(--glass-hi); font-size: 20px; line-height: 1; color: var(--primary); }
+  .stepper output { min-width: 72px; text-align: center; font: 500 16px var(--font); font-variant-numeric: tabular-nums; color: var(--primary); }
+  .seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: var(--glass-sub); border: 1px solid var(--glass-edge); }
+  .seg button { height: 40px; border: 0; border-radius: 10px; background: transparent; font-size: 14px; font-weight: 500; color: var(--muted-foreground); }
+  .seg button[aria-pressed="true"] { background: var(--primary); color: var(--primary-foreground); box-shadow: 0 4px 12px -6px rgba(30,15,5,.5); }
+  .add-act { display: flex; gap: 8px; }
+  .add-act .btn, .add-act .btn-line { flex: 1; }
+  .radar-link { margin-top: 8px; display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 9999px; font-size: 14px; font-weight: 500; color: var(--primary); text-decoration: none;
+    background: var(--glass-sub); border: 1px solid var(--glass-edge); box-shadow: var(--glass-hi); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+
   /* Hall of Fame: cream-tinted glass card */
   #viewHall { background: linear-gradient(150deg, rgba(245,233,212,.88), rgba(245,233,212,.66)); color: var(--sig-ink); border-color: rgba(255,255,255,.7); }
   .hall-row { min-height: 64px; padding: 14px 2px; border-top: 1px solid rgba(28,23,18,.12); display: flex; align-items: center; gap: 12px; }
@@ -260,6 +283,7 @@
     <span class="me-btn" id="meBtn" translate="no" hidden><span class="sr">나: </span><span id="meTxt"></span></span>
   </nav>
 
+  <section class="add-card" id="addBox" hidden aria-labelledby="addTitle" aria-live="polite"></section>
   <section class="card-stone" id="picker" hidden aria-labelledby="pickerTitle">
     <div>
       <h2 id="pickerTitle">지금은 구경만 할 수 있어요</h2>
@@ -294,6 +318,7 @@
   <footer>
     <span class="logo f-logo" aria-label="TTCC">TTCC<i>.</i></span>
     <small>Since 2026</small>
+    <a class="radar-link" href="https://coffee.inbeom.com/#ttcc">레이더에서 원두 고르기</a>
   </footer>
 </div>
 
@@ -310,6 +335,7 @@
   };
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const pad = (n) => ('0' + n).slice(-2);
+  const fmtWon = (n) => { try { return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 }).format(n); } catch (e) { return '₩' + n; } };
   const ICON = {
     star: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2l2.7 5.5 6 .9-4.35 4.25 1.03 6L12 17l-5.38 2.85 1.03-6L3.3 9.6l6-.9z"/></svg>',
     out: '<svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 16 16 8M9.5 8H16v6.5"/></svg>'
@@ -367,6 +393,95 @@
     }
     applyHash();
     render();
+  }
+
+  // ---------- 레이더에서 담기 (#add=<상품 주소>) ----------
+  const KINDS = ['구독', '애드온', '추가구매'];
+  const ADD_ERR = {
+    KEY: '멤버 링크로 들어온 폰에서만 담을 수 있어요.',
+    NOT_IN_RADAR: '레이더에서 찾을 수 없는 원두예요.',
+    LIMIT: '오늘은 더 담을 수 없어요. 하루 10개까지예요.',
+    DROP: 'DROP 번호를 다시 골라주세요.',
+    KIND: '구독·애드온·추가구매 중 하나를 골라주세요.'
+  };
+  function takeAdd() {
+    const m = location.hash.match(/^#add=(.+)$/);
+    if (!m) return false;
+    let url = '';
+    try { url = decodeURIComponent(m[1]); } catch (e) { url = ''; }
+    history.replaceState(null, '', location.pathname);
+    if (!/^https:\/\/[^\s]+$/i.test(url)) return false;
+    S.add = { url: url, phase: 'loading' };
+    render();
+    preview();
+    return true;
+  }
+  async function preview() {
+    const a = S.add;
+    try {
+      const r = await fetch(API + '?api=preview&url=' + encodeURIComponent(a.url), { cache: 'no-store', credentials: 'omit' });
+      const d = await r.json();
+      if (S.add !== a) return;
+      if (!d.ok) throw new Error(d.error || 'fail');
+      if (!d.found) { a.phase = 'error'; a.msg = ADD_ERR.NOT_IN_RADAR; }
+      else {
+        a.item = d.item; a.dup = d.dup;
+        a.drop = d.latestDrop || 1;
+        a.kind = d.item.sey ? '애드온' : '추가구매';
+        a.phase = d.dup ? 'dup' : 'ready';
+      }
+    } catch (e) { if (S.add === a) { a.phase = 'error'; a.msg = '원두 정보를 불러오지 못했어요. 잠시 후 다시 눌러주세요.'; } }
+    render();
+  }
+  async function addBean() {
+    const a = S.add;
+    if (!a || a.phase !== 'ready' || !S.key) return;
+    a.phase = 'saving'; render();
+    try {
+      const d = await fetch(API, { method: 'POST', body: JSON.stringify({ api: 'add', key: S.key, url: a.url, drop: a.drop, kind: a.kind }), credentials: 'omit', redirect: 'follow' }).then((r) => r.json());
+      if (!d.ok && d.error === 'DUP') { a.phase = 'dup'; a.dup = d.id; render(); return; }
+      if (!d.ok) throw new Error(d.error || 'fail');
+      a.phase = 'done'; a.id = d.id; render();
+      announce('TTCC에 담았어요');
+      await load(true);
+      S.add = null; S.drop = a.drop; S.open = a.id; S.roaster = 'all';
+      history.replaceState(null, '', '#b-' + a.id);
+      render(); applyHash(); render();
+    } catch (e) {
+      if (S.add !== a) return;
+      if (e.message === 'KEY') { S.badKey = true; S.me = null; S.key = null; store.del(KEY_KEY); store.del(KEY_ME); }
+      a.phase = 'ready'; a.err = ADD_ERR[e.message] || '담지 못했어요. 잠시 후 다시 눌러주세요.';
+      render();
+    }
+  }
+  function renderAdd() {
+    const el = $('#addBox'), a = S.add;
+    el.hidden = !a;
+    if (!a) { el.innerHTML = ''; return; }
+    const it = a.item;
+    const head = '<h2 id="addTitle">TTCC에 담기</h2>';
+    const bean = it ? `<div style="display:flex;flex-direction:column;gap:6px">
+        <span class="bean-nm" translate="no">${esc(it.name)}</span>
+        <span class="bean-mt">${rtTag({ roaster: it.sey ? '' : it.roaster })}<span>${esc([it.country, it.process, it.price ? fmtWon(it.price) : ''].filter(Boolean).join(' · '))}</span></span>
+        ${it.notes && it.notes.length ? `<div class="chips">${it.notes.slice(0, 5).map((n) => `<span>${esc(n)}</span>`).join('')}</div>` : ''}
+      </div>` : '';
+    const close = '<button type="button" class="btn-line" data-addclose="1">닫기</button>';
+    let body = '';
+    if (a.phase === 'loading') body = '<p class="msg">레이더에서 원두 정보를 불러오는 중…</p>';
+    else if (a.phase === 'error') body = `<p class="msg err">${esc(a.msg)}</p><div class="add-act">${close}</div>`;
+    else if (a.phase === 'dup') body = `${bean}<p class="msg">이미 TTCC에 담긴 원두예요.</p><div class="add-act">${close}<button type="button" class="btn" data-addgo="${esc(a.dup || '')}">보러 가기</button></div>`;
+    else if (!S.key) body = `${bean}<p class="msg">${ADD_ERR.KEY}</p><div class="add-act">${close}</div>`;
+    else if (a.phase === 'done') body = `${bean}<p class="msg ok">담았어요. 원두 목록으로 이동해요…</p>`;
+    else body = `${bean}
+      <div class="add-row"><span>DROP</span><span class="stepper">
+        <button type="button" data-adddrop="-1" aria-label="DROP 하나 내리기"${a.drop <= 1 ? ' disabled' : ''}>−</button>
+        <output aria-live="polite">${pad(a.drop)}</output>
+        <button type="button" data-adddrop="1" aria-label="DROP 하나 올리기">+</button></span></div>
+      <div class="seg" role="group" aria-label="구분">${KINDS.map((k) => `<button type="button" aria-pressed="${a.kind === k}" data-addkind="${k}">${k}</button>`).join('')}</div>
+      ${a.err ? `<p class="msg err">${esc(a.err)}</p>` : ''}
+      <div class="add-act"><button type="button" class="btn-line" data-addclose="1">취소</button>
+        <button type="button" class="btn" data-addgo="" data-addsave="1"${a.phase === 'saving' ? ' aria-disabled="true"' : ''}>${a.phase === 'saving' ? '담는 중…' : `DROP ${pad(a.drop)}에 담기`}</button></div>`;
+    el.innerHTML = head + body;
   }
 
   async function send(body) {
@@ -435,6 +550,7 @@
   }
 
   function paint() {
+    renderAdd();
     // 멤버
     $('#picker').hidden = !!S.me;
     $('#meBtn').hidden = !S.me;
@@ -581,6 +697,11 @@
     const t = ev.target.closest('button, a');
     if (!t) return;
     if (t.dataset.retry) { S.failed = false; render(); load(true); return; }
+    if (t.dataset.addclose) { S.add = null; render(); return; }
+    if (t.dataset.adddrop) { S.add.drop = Math.max(1, S.add.drop + Number(t.dataset.adddrop)); S.add.err = ''; render(); return; }
+    if (t.dataset.addkind) { S.add.kind = t.dataset.addkind; S.add.err = ''; render(); return; }
+    if (t.dataset.addsave) { addBean(); return; }
+    if (t.dataset.addgo) { const id = t.dataset.addgo; S.add = null; history.replaceState(null, '', '#b-' + id); applyHash(); render(); return; }
     if (t.dataset.roaster) { S.roaster = t.dataset.roaster; S.open = null; render(); return; }
     if (t.dataset.drop) { S.drop = Number(t.dataset.drop); S.open = null; S.roaster = 'all'; history.replaceState(null, '', '#d-' + S.drop); render(); return; }
     if (t.dataset.open) {
@@ -622,12 +743,13 @@
       if (el) { el.scrollIntoView({ block: 'start' }); el.classList.add('focus'); }
     });
   }
-  window.addEventListener('hashchange', () => { if (takeKey()) { whoami(); return; } applyHash(); render(); });
+  window.addEventListener('hashchange', () => { if (takeKey()) { whoami(); return; } if (takeAdd()) return; applyHash(); render(); });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.data) load(false); });
 
   if (S.data) { applyHash(); render(); }
   load(true);
   whoami();
+  takeAdd();
 })();
 </script>
 </body>
