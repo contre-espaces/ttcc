@@ -204,14 +204,23 @@
   .add-card .msg { margin: 0; font-size: 14px; color: var(--muted-foreground); }
   .add-card .msg.err { color: var(--err); }
   .add-card .msg.ok { color: var(--ok); }
-  .add-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .add-row > span { font-size: 13px; font-weight: 500; color: var(--slate); }
-  .stepper { display: inline-flex; align-items: center; gap: 4px; }
-  .stepper button { width: 44px; height: 44px; border-radius: 9999px; border: 1px solid var(--glass-edge); background: var(--glass-sub); box-shadow: var(--glass-hi); font-size: 20px; line-height: 1; color: var(--primary); }
-  .stepper output { min-width: 72px; text-align: center; font: 500 16px var(--font); font-variant-numeric: tabular-nums; color: var(--primary); }
-  .seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: var(--glass-sub); border: 1px solid var(--glass-edge); }
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field .lbl { font-size: 13px; font-weight: 500; color: var(--slate); }
+  .pick { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .pick button { min-height: 64px; padding: 10px 14px; border-radius: 14px; text-align: left; display: flex; flex-direction: column; gap: 2px; justify-content: center;
+    background: var(--glass-sub); border: 1px solid var(--glass-edge); box-shadow: var(--glass-hi); color: var(--primary); }
+  .pick button b { font-size: 16px; font-weight: 500; }
+  .pick button small { font-size: 12px; color: var(--muted-foreground); }
+  .pick button[aria-checked="true"] { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); box-shadow: 0 6px 16px -8px rgba(30,15,5,.5); }
+  .pick button[aria-checked="true"] small { color: inherit; opacity: .75; }
+  .pick button:only-child { grid-column: 1 / -1; }
+  .more-link { align-self: flex-start; min-height: 44px; padding: 0 2px; border: 0; background: none; font-size: 13px; font-weight: 500; color: var(--muted-foreground); text-decoration: underline; text-underline-offset: 3px; }
+  .older { display: flex; flex-wrap: wrap; gap: 6px; }
+  .older button { min-width: 52px; height: 40px; border-radius: 9999px; font-size: 14px; font-weight: 500; color: var(--primary); background: var(--glass-sub); border: 1px solid var(--glass-edge); }
+  .older button[aria-pressed="true"] { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
+  .seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: var(--glass-sub); border: 1px solid var(--glass-edge); }
   .seg button { height: 40px; border: 0; border-radius: 10px; background: transparent; font-size: 14px; font-weight: 500; color: var(--muted-foreground); }
-  .seg button[aria-pressed="true"] { background: var(--primary); color: var(--primary-foreground); box-shadow: 0 4px 12px -6px rgba(30,15,5,.5); }
+  .seg button[aria-checked="true"] { background: var(--primary); color: var(--primary-foreground); box-shadow: 0 4px 12px -6px rgba(30,15,5,.5); }
   .add-act { display: flex; gap: 8px; }
   .add-act .btn, .add-act .btn-line { flex: 1; }
   .radar-link { margin-top: 8px; display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 9999px; font-size: 14px; font-weight: 500; color: var(--primary); text-decoration: none;
@@ -396,7 +405,7 @@
   }
 
   // ---------- 레이더에서 담기 (#add=<상품 주소>) ----------
-  const KINDS = ['구독', '애드온', '추가구매'];
+  const KINDS = ['구독', '추가구매'];
   const ADDERS = ['IB'];   // 레이더에서 담기 (서버도 같은 규칙으로 막음)
   const ADD_ERR = {
     KEY: '멤버 링크로 들어온 폰에서만 담을 수 있어요.',
@@ -404,7 +413,7 @@
     NOT_IN_RADAR: '레이더에서 찾을 수 없는 원두예요.',
     LIMIT: '오늘은 더 담을 수 없어요. 하루 10개까지예요.',
     DROP: 'DROP 번호를 다시 골라주세요.',
-    KIND: '구독·애드온·추가구매 중 하나를 골라주세요.'
+    KIND: '구독·추가구매 중 하나를 골라주세요.'
   };
   function takeAdd() {
     const m = location.hash.match(/^#add=(.+)$/);
@@ -429,7 +438,8 @@
       else {
         a.item = d.item; a.dup = d.dup;
         a.drop = d.latestDrop || 1;
-        a.kind = d.item.sey ? '애드온' : '추가구매';
+        a.kind = d.item.sey ? '구독' : '추가구매';
+        a.latest = d.latestDrop || 0;
         a.phase = d.dup ? 'dup' : 'ready';
       }
     } catch (e) { if (S.add === a) { a.phase = 'error'; a.msg = '원두 정보를 불러오지 못했어요. 잠시 후 다시 눌러주세요.'; } }
@@ -456,6 +466,14 @@
       render();
     }
   }
+  // DROP 고르기: '지금 DROP'과 '새 DROP' 두 칸 (지난 DROP은 따로 펼침)
+  const countIn = (n) => beans().filter((b) => b.drop === n).length;
+  function dropChoices(a) {
+    if (!a.latest) return [{ n: 1, sub: '첫 DROP' }];
+    return [{ n: a.latest, sub: '지금 · ' + countIn(a.latest) + '봉' }, { n: a.latest + 1, sub: '새로 시작' }];
+  }
+  function olderDrops(a) { const out = []; for (let n = a.latest - 1; n >= 1; n--) out.push(n); return out; }
+
   function renderAdd() {
     const el = $('#addBox'), a = S.add;
     el.hidden = !a;
@@ -476,11 +494,13 @@
     else if (S.me && ADDERS.indexOf(S.me) < 0) body = `${bean}<p class="msg">${ADD_ERR.NOT_ADDER}</p><div class="add-act">${close}</div>`;
     else if (a.phase === 'done') body = `${bean}<p class="msg ok">담았어요. 원두 목록으로 이동해요…</p>`;
     else body = `${bean}
-      <div class="add-row"><span>DROP</span><span class="stepper">
-        <button type="button" data-adddrop="-1" aria-label="DROP 하나 내리기"${a.drop <= 1 ? ' disabled' : ''}>−</button>
-        <output aria-live="polite">${pad(a.drop)}</output>
-        <button type="button" data-adddrop="1" aria-label="DROP 하나 올리기">+</button></span></div>
-      <div class="seg" role="group" aria-label="구분">${KINDS.map((k) => `<button type="button" aria-pressed="${a.kind === k}" data-addkind="${k}">${k}</button>`).join('')}</div>
+      <div class="field"><span class="lbl" id="dropLblAdd">어느 DROP에 담을까요?</span>
+        <div class="pick" role="radiogroup" aria-labelledby="dropLblAdd">${dropChoices(a).map((c) => `<button type="button" role="radio" aria-checked="${a.drop === c.n}" data-adddrop="${c.n}"><b class="num">DROP ${pad(c.n)}</b><small>${esc(c.sub)}</small></button>`).join('')}</div>
+        ${a.latest > 1 && !a.other ? '<button type="button" class="more-link" data-addother="1">지난 DROP에 담기</button>' : ''}
+        ${a.other ? `<div class="older" role="group" aria-label="지난 DROP">${olderDrops(a).map((n) => `<button type="button" aria-pressed="${a.drop === n}" data-adddrop="${n}" class="num">${pad(n)}</button>`).join('')}</div>` : ''}
+      </div>
+      <div class="field"><span class="lbl" id="kindLblAdd">구분</span>
+      <div class="seg" role="radiogroup" aria-labelledby="kindLblAdd">${KINDS.map((k) => `<button type="button" role="radio" aria-checked="${a.kind === k}" data-addkind="${k}">${k}</button>`).join('')}</div></div>
       ${a.err ? `<p class="msg err">${esc(a.err)}</p>` : ''}
       <div class="add-act"><button type="button" class="btn-line" data-addclose="1">취소</button>
         <button type="button" class="btn" data-addgo="" data-addsave="1"${a.phase === 'saving' ? ' aria-disabled="true"' : ''}>${a.phase === 'saving' ? '담는 중…' : `DROP ${pad(a.drop)}에 담기`}</button></div>`;
@@ -702,7 +722,8 @@
     if (!t) return;
     if (t.dataset.retry) { S.failed = false; render(); load(true); return; }
     if (t.dataset.addclose) { S.add = null; render(); return; }
-    if (t.dataset.adddrop) { S.add.drop = Math.max(1, S.add.drop + Number(t.dataset.adddrop)); S.add.err = ''; render(); return; }
+    if (t.dataset.adddrop) { S.add.drop = Number(t.dataset.adddrop); S.add.err = ''; render(); return; }
+    if (t.dataset.addother) { S.add.other = true; render(); return; }
     if (t.dataset.addkind) { S.add.kind = t.dataset.addkind; S.add.err = ''; render(); return; }
     if (t.dataset.addsave) { addBean(); return; }
     if (t.dataset.addgo) { const id = t.dataset.addgo; S.add = null; history.replaceState(null, '', '#b-' + id); applyHash(); render(); return; }
