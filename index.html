@@ -552,6 +552,8 @@
   const avgOf = (b) => { const v = Object.values(b.ratings).map((r) => r.score); return v.length ? v.reduce((a, c) => a + c, 0) / v.length : null; };
   const daysSince = (iso) => { if (!iso) return null; const t = new Date(iso + 'T00:00:00+09:00'); const n = Math.floor((Date.now() - t.getTime()) / 86400000); return n >= 0 ? n : null; };
   // 로스터리 라벨: 노션 '로스터리' 칸이 비어 있으면 SEY. 이름마다 늘 같은 색
+  // 생산자 칸: 원두명에 이미 들어 있는 이름은 빼고 (생산자 또는 농장만)
+  const prodOf = (b) => { const nm = String(b.name || '').toLowerCase(); return [b.producer, b.farm].filter((x) => x && nm.indexOf(String(x).toLowerCase()) < 0).filter((x, i, a) => a.indexOf(x) === i).join(' · '); };
   const roasterOf = (b) => String(b.roaster || '').trim() || 'SEY';
   const RT = ['#fcab79', '#a8d8c4', '#f4d35e', '#d4b8ec', '#f4a0b4', '#e8c79e'];
   const rtColor = (n) => { if (n === 'SEY') return RT[0]; let h = 0; for (const c of n) h = (h * 31 + c.codePointAt(0)) >>> 0; return RT[1 + (h % (RT.length - 1))]; };
@@ -660,7 +662,7 @@
       const msg = S.msg[b.id];
       const facts = [
         (b.country || b.origin) && `<i>산지</i>${esc([b.country, b.origin].filter(Boolean).join(' · '))}`,
-        (b.producer || b.farm) && `<i>생산자</i>${esc([b.producer, b.farm].filter(Boolean).join(' · '))}`,
+        prodOf(b) && `<i>생산자</i>${esc(prodOf(b))}`,
         b.altitude && `<i>고도</i>${esc(b.altitude)}`,
         b.harvest && `<i>수확</i>${esc(b.harvest)}`,
         b.varieties.length && `<i>품종</i>${esc(b.varieties.join(' · '))}`,
