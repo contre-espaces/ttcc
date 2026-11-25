@@ -4,7 +4,7 @@
  * 하는 일
  *  1) fillBeans  : 노션 원두 DB에 상품 URL만 넣으면 원두 정보·원두 번호·별점 링크를 채움 (10분마다)
  *  2) doGet      : ttcc.inbeom.com 페이지에 원두·별점 데이터를 JSON으로 내려줌
- *  3) doPost     : 페이지에서 남긴 별점·한 줄 감상을 노션 별점 DB에 저장 (원두+멤버당 1행, 다시 누르면 덮어씀)
+ *  3) doPost     : 페이지에서 남긴 별점·코멘트를 노션 별점 DB에 저장 (원두+멤버당 1행, 다시 누르면 덮어씀)
  *
  * 준비물: 스크립트 속성 NOTION_TOKEN (노션 내부 통합 시크릿)
  *         스크립트 속성 MEMBER_KEYS (멤버별 개인 링크 키 — issueKeys()로 생성, 저장소에는 절대 올리지 않음)
@@ -351,7 +351,7 @@ function clubData_(fresh) {
     const m = P.sel(pr['멤버']);
     const score = P.num(pr['별점']);
     P.rel(pr['원두']).forEach((bid) => {
-      if (byId[bid] && m && score) byId[bid].ratings[m] = { score: score, note: P.text(pr['한 줄 감상']), felt: P.text(pr['느낀 노트']).split(/\s*·\s*/).filter(Boolean) };
+      if (byId[bid] && m && score) byId[bid].ratings[m] = { score: score, note: P.text(pr['코멘트']), felt: P.text(pr['느낀 노트']).split(/\s*·\s*/).filter(Boolean), at: pg.created_time || '' };   // at: 처음 남긴 때 (멤버 평가 순서)
     });
   });
 
@@ -387,7 +387,7 @@ function saveRating_(b) {
   if (!/^[0-9a-f]{32}$/.test(bean)) throw new Error('원두 ID가 올바르지 않습니다');
   if (CFG.MEMBERS.indexOf(member) < 0) throw new Error('멤버가 올바르지 않습니다');
   if (!(score >= 1 && score <= 5 && Math.round(score) === score)) throw new Error('별점은 1~5');
-  const note = b.note == null ? null : String(b.note).slice(0, 300);
+  const note = b.note == null ? null : String(b.note).slice(0, 1000);   // 코멘트 (노션 칸 한도 2000자 안쪽)
   // 느낀 컵 노트: 최대 8개, 하나에 20자 (보낸 것만 덮어씀)
   const felt = Array.isArray(b.felt) ? b.felt.map((x) => String(x).replace(/·/g, ' ').trim().slice(0, 20)).filter(Boolean).filter((x, i, a) => a.indexOf(x) === i).slice(0, 8) : null;
 
@@ -405,7 +405,7 @@ function saveRating_(b) {
       ]
     });
     const props = { '기록': W.title(no + ' · ' + member), '별점': W.num(score) };
-    if (note !== null) props['한 줄 감상'] = W.text(note);
+    if (note !== null) props['코멘트'] = W.text(note);
     if (felt !== null) props['느낀 노트'] = W.text(felt.join(' · '));
 
     if (found.length) {
