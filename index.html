@@ -219,7 +219,7 @@
   .older button { min-width: 52px; height: 40px; border-radius: 9999px; font-size: 14px; font-weight: 500; color: var(--primary); background: var(--glass-sub); border: 1px solid var(--glass-edge); }
   .older button[aria-pressed="true"] { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
   .seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: var(--glass-sub); border: 1px solid var(--glass-edge); }
-  .seg button { height: 40px; border: 0; border-radius: 10px; background: transparent; font-size: 14px; font-weight: 500; color: var(--muted-foreground); }
+  .seg button { height: 44px; border: 0; border-radius: 10px; background: transparent; font-size: 14px; font-weight: 500; color: var(--muted-foreground); }
   .seg button[aria-checked="true"] { background: var(--primary); color: var(--primary-foreground); box-shadow: 0 4px 12px -6px rgba(30,15,5,.5); }
   .add-act { display: flex; gap: 8px; }
   .add-act .btn, .add-act .btn-line { flex: 1; }
@@ -306,6 +306,86 @@
   .rv-sc .ic { fill: currentColor; font-size: .9em; }
   .reviews p, .story p { word-break: keep-all; overflow-wrap: anywhere; }
   .reviews p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--foreground); overflow-wrap: anywhere; }
+
+  /* ---------- 원두 시트 ---------- */
+  .sheet { position: fixed; inset: auto 0 0 0; margin: 0 auto; width: 100%; max-width: 560px; max-height: 92dvh; padding: 0; border: 0; border-radius: 28px 28px 0 0; background: var(--glass-strong); color: var(--foreground); box-shadow: 0 -24px 60px -20px rgba(60,25,5,.45), inset 0 1px 0 rgba(255,255,255,.5); -webkit-backdrop-filter: blur(28px) saturate(1.5); backdrop-filter: blur(28px) saturate(1.5); overflow: hidden; }
+  .sheet::backdrop { background: rgba(30,15,5,.36); }
+  .sheet[open] { animation: shUp .32s var(--ease); }
+  @keyframes shUp { from { transform: translateY(40px); opacity: 0; } }
+  @media (min-width: 720px) { .sheet { inset: 0; margin: auto; border-radius: 28px; max-height: 88dvh; } }
+  .sh-in { max-height: inherit; overflow-y: auto; overscroll-behavior: contain; padding: 0 20px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 18px; }
+  .sh-grab { width: 40px; height: 5px; border-radius: 9px; background: var(--hair); margin: 10px auto 0; flex: none; }
+  @media (min-width: 720px) { .sh-grab { visibility: hidden; height: 4px; } }
+  .sh-head { display: flex; align-items: flex-start; gap: 12px; }
+  .sh-tt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .sh-sub { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--slate); }
+  .sh-head h2 { margin: 0; font-size: 24px; line-height: 1.25; font-weight: 500; letter-spacing: -.01em; text-wrap: balance; }
+  .sh-x { flex: none; width: 44px; height: 44px; border-radius: 9999px; border: 1px solid var(--hair); background: var(--glass-sub); color: var(--foreground); display: inline-flex; align-items: center; justify-content: center; }
+  .sh-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 500; color: var(--foreground); }
+  .hint { font-size: 12px; font-weight: 400; color: var(--slate); }
+
+  /* 맛보기 흐름: 로스팅 → 도착 → 맛보기 좋은 때 → 평가 */
+  .flow { padding: 16px; border-radius: 20px; background: var(--glass-sub); box-shadow: var(--glass-hi); }
+  .flow ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); position: relative; }
+  .flow ol::before { content: ""; position: absolute; left: 12.5%; right: 12.5%; top: 7px; height: 2px; background: var(--hair); }
+  .flow li { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; font-size: 12px; color: var(--slate); }
+  .flow li i { width: 16px; height: 16px; border-radius: 50%; background: var(--glass-strong); border: 2px solid var(--hair); position: relative; z-index: 1; }
+  .flow li.done i { background: var(--coral); border-color: var(--coral); }
+  .flow li.now i { border-color: var(--coral); box-shadow: 0 0 0 4px rgba(170,45,0,.16); }
+  .flow li b { font-weight: 500; color: var(--foreground); word-break: keep-all; }
+  .flow li span { font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 2px; min-height: 16px; }
+  .flow li span .ic { fill: var(--star); font-size: .9em; }
+  .flow-cap { margin: 12px 0 0; text-align: center; font-size: 14px; font-weight: 500; color: var(--coral); }
+
+  /* 정보 타일 */
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .tiles div { padding: 14px 12px; border-radius: 16px; background: var(--glass-sub); box-shadow: var(--glass-hi); display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .tiles span { font-size: 12px; color: var(--slate); }
+  .tiles b { font-size: 15px; font-weight: 500; line-height: 1.3; overflow-wrap: anywhere; word-break: keep-all; }
+  .sh-facts { margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .sh-facts div { display: flex; gap: 12px; }
+  .sh-facts dt { flex: none; width: 44px; color: var(--slate); }
+  .sh-facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+  .sh-facts a { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; color: var(--foreground); }
+
+  /* 내 평가 카드: 정보 바로 아래, 코랄로 강조 */
+  .rate-card { padding: 18px 16px; border-radius: 22px; background: linear-gradient(160deg, rgba(252,171,121,.28), rgba(252,171,121,.10)); border: 1px solid rgba(170,45,0,.18); display: flex; flex-direction: column; gap: 12px; }
+  .rate-card .stars { margin-left: -6px; }
+  .felt { display: flex; flex-wrap: wrap; gap: 8px; }
+  .felt button { min-height: 44px; padding: 0 14px; border-radius: 9999px; border: 1px solid var(--hair); background: var(--glass-sub); color: var(--foreground); font-size: 14px; position: relative; }
+  .felt button::after { content: ""; position: absolute; inset: -2px; }
+  .felt button[aria-pressed="true"] { background: var(--coral); border-color: var(--coral); color: #fff; }
+  .felt button[aria-pressed="true"]::before { content: "✓ "; }
+  .felt-add input { height: 44px; width: 118px; padding: 0 14px; border-radius: 9999px; border: 1px dashed var(--hair); background: transparent; color: var(--foreground); font-size: 16px; }
+  .felt-add input:focus { outline: none; border-style: solid; border-color: var(--coral); box-shadow: 0 0 0 3px var(--ring); }
+  .memo { display: flex; flex-direction: column; gap: 6px; }
+  .memo input { height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--input); background: var(--glass-sub); color: var(--foreground); font-size: 16px; }
+  .memo input:focus { border-color: var(--coral); box-shadow: 0 0 0 3px var(--ring); outline: none; }
+  .btn.save { width: 100%; }
+  .btn.save[aria-disabled="true"] { opacity: .45; cursor: default; }
+
+  /* 멤버 평가: 한 사람씩 아바타 + 별점 + 느낀 노트 + 감상 */
+  .club { display: flex; flex-direction: column; gap: 10px; }
+  .mates { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .mates li { display: flex; gap: 12px; padding: 12px 14px; border-radius: 18px; background: var(--glass-sub); box-shadow: var(--glass-hi); }
+  .mates li.none { opacity: .55; }
+  .mates .av { flex: none; width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; background: var(--peach); color: var(--sig-ink); }
+  .mt-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .mt-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 14px; }
+  .mt-top b { font-weight: 500; }
+  .mates p { margin: 0; font-size: 15px; line-height: 1.6; word-break: keep-all; overflow-wrap: anywhere; }
+  .mini { display: flex; flex-wrap: wrap; gap: 4px; }
+  .mini span { font-size: 12px; padding: 2px 8px; border-radius: 9999px; background: rgba(252,171,121,.45); color: var(--sig-ink); }
+  .mini span.own { background: rgba(168,216,196,.7); }
+  .blind { padding: 14px; border-radius: 16px; border: 1px dashed var(--hair); text-align: center; }
+  @media (prefers-color-scheme: dark) {
+    .rate-card { background: linear-gradient(160deg, rgba(255,120,60,.20), rgba(255,120,60,.06)); border-color: rgba(255,140,80,.25); }
+    .flow-cap { color: #ffab7a; }
+    .flow li.done i, .felt button[aria-pressed="true"] { background: #e8743c; border-color: #e8743c; }
+    .mini span { background: rgba(252,171,121,.22); color: #ffd2b5; }
+    .mini span.own { background: rgba(168,216,196,.22); color: #c9f0df; }
+  }
+  @media (prefers-reduced-motion: reduce) { .sheet[open] { animation: none; } }
 </style>
 </head>
 <body>
@@ -351,6 +431,7 @@
       <div class="list" id="viewHall"></div>
     </section>
   </main>
+  <dialog class="sheet" id="sheet" aria-labelledby="shName"><div class="sh-in" id="shIn"></div></dialog>
 
   <footer>
     <span class="logo f-logo" aria-label="TTCC">TTCC<i>.</i></span>
@@ -384,6 +465,8 @@
     data: null, me: store.get(KEY_ME), tab: 'drop', drop: null, open: null, roaster: 'all',
     msg: {},            // 원두별 저장 상태 { text, err }
     draft: {},          // 저장 전 감상 (다시 그려도 유지)
+    felt: {},           // 저장 전 느낀 노트 [원두ID] = ['베르가못', …]
+    add: {},            // 직접 추가하는 노트 입력값
     busy: {}            // 원두별 저장 중
   };
   if (S.me && ['IB', 'HJ', 'KC'].indexOf(S.me) < 0) S.me = null;
@@ -585,6 +668,8 @@
     const d = el.dataset || {};
     if (d.rate) return { sel: '[data-rate="' + d.rate + '"][data-n="' + d.n + '"]' };
     if (d.note) return { sel: '[data-note="' + d.note + '"]' };
+    if (d.felt != null) return { sel: '[data-felt="' + CSS.escape(d.felt) + '"]' };
+    if (el.id && el.id.indexOf('fa-') === 0) return { sel: '#' + el.id, caret: el.selectionStart };
     if (d.open) return { sel: '[data-open="' + d.open + '"]' };
     if (d.drop) return { sel: '[data-drop="' + d.drop + '"]' };
     if (d.me) return { sel: '[data-me="' + d.me + '"]' };
@@ -642,6 +727,7 @@
 
     renderDrop(shown);
     renderHall();
+    renderSheet();
   }
 
   function renderDrop(list) {
@@ -660,56 +746,123 @@
       const mine = myScore(b);
       const open = S.open === b.id;
       const status = !S.me ? '보기' : mine ? ICON.star + mine : '평가하기';
-      const others = ['IB', 'HJ', 'KC'].filter((w) => w !== S.me && b.ratings[w]).length;
-      const msg = S.msg[b.id];
-      const facts = [
-        (b.country || b.origin) && `<i>산지</i>${esc([b.country, b.origin].filter(Boolean).join(' · '))}`,
-        prodOf(b) && `<i>생산자</i>${esc(prodOf(b))}`,
-        b.altitude && `<i>고도</i>${esc(b.altitude)}`,
-        b.harvest && `<i>수확</i>${esc(b.harvest)}`,
-        b.varieties.length && `<i>품종</i>${esc(b.varieties.join(' · '))}`,
-        b.process && `<i>가공</i>${esc(b.process)}`,
-        b.price && `<i>가격</i>${esc(fmtPrice(b.price, b.currency))}${b.size ? ` · ${esc(b.size)}` : ''}`,
-        /^https:\/\//i.test(b.url || '') && `<i aria-hidden="true"></i><a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">상품 페이지 ${ICON.out}<span class="sr"> (새 창)</span></a>`
-      ].filter(Boolean).map((x) => `<span>${x}</span>`).join('');
-      let panel = '';
-      if (open) {
-        panel = `<div class="panel" id="p-${b.id}">
-          ${b.notes.length ? `<div class="chips">${b.notes.map((n) => `<span>${esc(n)}</span>`).join('')}</div>` : ''}
-          ${facts ? `<div class="facts">${facts}</div>` : ''}
-          ${b.procText || b.desc ? `<details class="story"><summary>로스터리 설명</summary>${[['가공 과정', b.procText], ['원두 이야기', b.desc]].filter((x) => x[1]).map(([h, x]) => `<h4>${h}</h4><p>${esc(x)}</p>`).join('')}</details>` : ''}
-          ${!S.me ? '<div class="cap">내 링크로 들어오면 별점을 남길 수 있어요.</div>' : `
-            <div style="display:flex;flex-direction:column;gap:6px">
-              <div class="cap">내 점수 · ${S.me}</div>
-              <div class="stars" role="radiogroup" aria-label="별점">
-                ${[1, 2, 3, 4, 5].map((n) => `<button type="button" role="radio" aria-checked="${n === mine}" aria-label="${n}점" class="${n <= mine ? 'on' : ''}" data-rate="${b.id}" data-n="${n}" aria-disabled="${!!S.busy[b.id]}">${ICON.star}</button>`).join('')}
-              </div>
-            </div>
-            ${msg ? `<div class="saved ${msg.err ? 'err' : ''}">${esc(msg.text)}</div>` : ''}
-            ${mine ? `
-              <div class="scores">${['IB', 'HJ', 'KC'].map((w) => {
-                const r = b.ratings[w];
-                return `<div><span class="who mono" translate="no">${w}${w === S.me ? ' (나)' : ''}</span><span class="val">${r ? ICON.star + r.score : '<span aria-label="아직 없음">–</span>'}</span></div>`;
-              }).join('')}</div>
-              ${(() => { const rv = ['IB', 'HJ', 'KC'].filter((w) => b.ratings[w] && b.ratings[w].note); return rv.length ? `<ul class="reviews" aria-label="한 줄 감상">${rv.map((w) => `<li><span class="rv-who"><b class="mono" translate="no">${w}</b><span class="rv-sc">${ICON.star}${b.ratings[w].score}</span></span><p>${esc(b.ratings[w].note)}</p></li>`).join('')}</ul>` : ''; })()}
-              <label style="display:flex;flex-direction:column;gap:6px">
-                <span class="cap">한 줄 감상 (선택)</span>
-                <span class="note">
-                  <input type="text" name="note" autocomplete="off" enterkeyhint="done" maxlength="300" id="n-${b.id}" placeholder="예: 식으면서 복숭아가 올라옴…" value="${esc(S.draft[b.id] != null ? S.draft[b.id] : ((b.ratings[S.me] || {}).note || ''))}">
-                  <button type="button" data-note="${b.id}" aria-disabled="${!!S.busy[b.id]}">${S.busy[b.id] ? '저장 중…' : '저장'}</button>
-                </span>
-              </label>`
-            : `<div class="cap">${others ? `내 점수를 남기면 ${others}명의 점수가 보여요.` : '내 점수를 남기면 다른 멤버 점수가 보여요.'}</div>`}`}
-        </div>`;
-      }
       return `<article class="bean" id="b-${b.id}">
-        <button type="button" class="row" aria-expanded="${open}" aria-controls="p-${b.id}" data-open="${b.id}">
+        <button type="button" class="row" aria-haspopup="dialog" aria-expanded="${open}" data-open="${b.id}">
           <span class="no mono">${esc(b.no)}</span>
           <span class="tx"><span class="nm" translate="no">${esc(b.name)}</span><span class="mt">${rtTag(b)}<span>${esc(metaOf(b))}</span></span></span>
           <span class="st ${mine ? 'done' : ''}"${mine ? ` aria-label="내 점수 ${mine}점"` : ''}>${status}</span>
-        </button>${panel}
+        </button>
       </article>`;
     }).join('');
+  }
+
+
+  // ---------- 원두 시트: 정보 → 맛보기 흐름 → 내 평가 → 멤버 평가가 한 흐름 ----------
+  const addDays = (iso, n) => { const d = new Date(iso + 'T12:00:00+09:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+  const today = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+  const REST = [7, 21];   // 필터 원두 맛보기 좋은 때: 로스팅 +7 ~ +21일
+  function flowOf(b, mine) {
+    const t = today();
+    const best0 = b.roast ? addDays(b.roast, REST[0]) : null, best1 = b.roast ? addDays(b.roast, REST[1]) : null;
+    const steps = [
+      { k: '로스팅', d: b.roast, done: !!b.roast && b.roast <= t },
+      { k: '도착', d: b.arrived, done: !!b.arrived && b.arrived <= t },
+      { k: '맛보기 좋은 때', d: best0, done: !!best0 && best0 <= t },
+      { k: '평가', d: null, done: !!mine }
+    ];
+    const ds = daysSince(b.roast);
+    let cap = '';
+    if (mine) cap = '평가를 남겼어요';
+    else if (ds == null) cap = b.arrived ? '도착했어요 · 로스팅 날짜를 적으면 맛보기 좋은 때를 알려줘요' : '';
+    else if (t < best0) cap = `로스팅 +${ds}일 · ${REST[0] - ds}일 뒤부터 맛보기 좋아요`;
+    else if (t <= best1) cap = `로스팅 +${ds}일 · 지금 맛보기 좋은 때`;
+    else cap = `로스팅 +${ds}일 · 늦기 전에 마셔 보세요`;
+    const cur = steps.filter((x) => x.done).length;
+    return { steps, cap, cur };
+  }
+  function feltOf(b) {
+    if (S.felt[b.id]) return S.felt[b.id];
+    const r = S.me && b.ratings[S.me];
+    return (r && r.felt) || [];
+  }
+  function dirty(b) {
+    const r = (S.me && b.ratings[S.me]) || {};
+    const f = feltOf(b).join('·') !== ((r.felt || []).join('·'));
+    const n = S.draft[b.id] != null && S.draft[b.id] !== (r.note || '');
+    return f || n;
+  }
+  function renderSheet() {
+    const dlg = $('#sheet');
+    const b = S.open && beans().find((x) => x.id === S.open);
+    if (!b) { if (dlg.open) dlg.close(); return; }
+    const mine = myScore(b);
+    const msg = S.msg[b.id];
+    const others = ['IB', 'HJ', 'KC'].filter((w) => w !== S.me && b.ratings[w]).length;
+    const fl = flowOf(b, mine);
+    const tiles = [['산지', b.country || '—'], ['가공', b.process || '—'], ['품종', b.varieties.join(' · ') || '—']];
+    const facts = [
+      b.origin && ['지역', b.origin],
+      prodOf(b) && ['생산자', prodOf(b)],
+      b.altitude && ['고도', b.altitude],
+      b.harvest && ['수확', b.harvest],
+      b.price && ['가격', fmtPrice(b.price, b.currency) + (b.size ? ' · ' + b.size : '')]
+    ].filter(Boolean);
+    const felt = feltOf(b);
+    const pool = b.notes.concat(felt.filter((x) => b.notes.indexOf(x) < 0));
+    const busy = !!S.busy[b.id];
+    $('#shIn').innerHTML = `
+      <div class="sh-grab" aria-hidden="true"></div>
+      <header class="sh-head">
+        <div class="sh-tt">
+          <span class="sh-sub"><span class="mono">${esc(b.no)}</span>${rtTag(b)}<span>DROP ${pad(b.drop)}</span></span>
+          <h2 id="shName" translate="no">${esc(b.name)}</h2>
+        </div>
+        <button type="button" class="sh-x" data-close="1" aria-label="닫기"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </header>
+
+      <section class="flow" aria-label="맛보기 흐름">
+        <ol>${fl.steps.map((x, i) => `<li class="${x.done ? 'done' : ''} ${i === fl.cur ? 'now' : ''}"><i aria-hidden="true"></i><b>${x.k}</b><span>${x.d ? dayText(x.d) : (x.k === '평가' && mine ? ICON.star + mine : '')}</span></li>`).join('')}</ol>
+        ${fl.cap ? `<p class="flow-cap">${esc(fl.cap)}</p>` : ''}
+      </section>
+
+      <div class="tiles">${tiles.map(([k, v]) => `<div><span>${k}</span><b>${esc(v)}</b></div>`).join('')}</div>
+
+      ${facts.length || /^https:\/\//i.test(b.url || '') ? `<dl class="sh-facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}${/^https:\/\//i.test(b.url || '') ? `<div><dt></dt><dd><a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">상품 페이지 ${ICON.out}<span class="sr"> (새 창)</span></a></dd></div>` : ''}</dl>` : ''}
+      ${b.procText || b.desc ? `<details class="story"><summary>로스터리 설명</summary>${[['가공 과정', b.procText], ['원두 이야기', b.desc]].filter((x) => x[1]).map(([h, x]) => `<h4>${h}</h4><p>${esc(x)}</p>`).join('')}</details>` : ''}
+
+      <section class="rate-card" aria-label="내 평가">
+        ${!S.me ? `
+          ${b.notes.length ? `<div class="sh-h">컵 노트</div><div class="chips">${b.notes.map((n) => `<span>${esc(n)}</span>`).join('')}</div>` : ''}
+          <p class="cap">카톡 링크로 들어오면 별점을 남길 수 있어요.</p>` : `
+          <div class="sh-h"><span>내 평가</span><span class="mono" translate="no">${S.me}</span></div>
+          <div class="stars" role="radiogroup" aria-label="별점">
+            ${[1, 2, 3, 4, 5].map((n) => `<button type="button" role="radio" aria-checked="${n === mine}" aria-label="${n}점" class="${n <= mine ? 'on' : ''}" data-rate="${b.id}" data-n="${n}" aria-disabled="${busy}">${ICON.star}</button>`).join('')}
+          </div>
+          ${mine ? `
+            <div class="sh-h"><span>느낀 노트</span><span class="hint">로스터리 노트 중 느낀 것을 눌러요</span></div>
+            <div class="felt" role="group" aria-label="느낀 노트">
+              ${pool.map((n) => `<button type="button" aria-pressed="${felt.indexOf(n) >= 0}" data-felt="${esc(n)}">${esc(n)}</button>`).join('')}
+              <span class="felt-add"><input type="text" id="fa-${b.id}" maxlength="20" autocomplete="off" enterkeyhint="done" placeholder="+ 직접 추가" value="${esc(S.add[b.id] || '')}" aria-label="느낀 노트 직접 추가"></span>
+            </div>
+            <label class="memo"><span class="sh-h"><span>한 줄 감상</span><span class="hint">선택</span></span>
+              <input type="text" name="note" autocomplete="off" enterkeyhint="done" maxlength="300" id="n-${b.id}" placeholder="예: 식으면서 복숭아가 올라옴" value="${esc(S.draft[b.id] != null ? S.draft[b.id] : ((b.ratings[S.me] || {}).note || ''))}">
+            </label>
+            <button type="button" class="btn save" data-note="${b.id}" aria-disabled="${busy || !dirty(b)}">${busy ? '저장 중…' : dirty(b) ? '노트·감상 저장' : '저장됨'}</button>`
+          : `<p class="cap">별을 누르면 바로 저장돼요. 그다음 느낀 노트와 감상을 남길 수 있어요.</p>`}
+          ${msg ? `<div class="saved ${msg.err ? 'err' : ''}" role="status">${esc(msg.text)}</div>` : ''}`}
+      </section>
+
+      <section class="club" aria-label="멤버 평가">
+        <div class="sh-h"><span>멤버 평가</span>${mine || !S.me ? `<span class="hint">평균 ${Object.keys(b.ratings).length ? fmtNum.format(avgOf(b)) : '–'}</span>` : ''}</div>
+        ${mine || !S.me ? `
+          <ul class="mates">${['IB', 'HJ', 'KC'].map((w) => { const r = b.ratings[w]; return `<li class="${r ? '' : 'none'}">
+            <span class="av mono" translate="no">${w}</span>
+            <div class="mt-tx"><div class="mt-top"><b translate="no">${w}${w === S.me ? ' (나)' : ''}</b>${r ? `<span class="rv-sc">${ICON.star}${r.score}</span>` : '<span class="hint">아직</span>'}</div>
+              ${r && r.felt && r.felt.length ? `<div class="mini">${r.felt.map((x) => `<span class="${b.notes.indexOf(x) >= 0 ? '' : 'own'}">${esc(x)}</span>`).join('')}</div>` : ''}
+              ${r && r.note ? `<p>${esc(r.note)}</p>` : ''}</div></li>`; }).join('')}</ul>`
+          : `<p class="cap blind">${others ? `내 점수를 남기면 ${others}명의 평가가 열려요.` : '내 점수를 남기면 다른 멤버 평가가 열려요.'}</p>`}
+      </section>`;
+    if (!dlg.open) { dlg.showModal(); $('#shIn').scrollTop = 0; }
   }
 
   function renderHall() {
@@ -729,18 +882,19 @@
   }
 
   // ---------- 동작 ----------
-  async function rate(id, n, note) {
+  async function rate(id, n, note, felt) {
     const b = beans().find((x) => x.id === id);
     if (!b || !S.me || S.busy[id]) return;
     const prev = b.ratings[S.me] ? Object.assign({}, b.ratings[S.me]) : null;
-    b.ratings[S.me] = { score: n, note: note != null ? note : (prev ? prev.note : '') };
+    b.ratings[S.me] = { score: n, note: note != null ? note : (prev ? prev.note : ''), felt: felt != null ? felt : (prev ? prev.felt || [] : []) };
     S.busy[id] = true;
     S.msg[id] = { text: '저장 중…' };
     render();
     try {
-      await send({ bean: id, key: S.key, member: S.me, score: n, note: note });
-      S.msg[id] = { text: note != null ? '✓ 감상까지 저장됐어요' : '✓ 저장됐어요' };
+      await send({ bean: id, key: S.key, member: S.me, score: n, note: note, felt: felt });
+      S.msg[id] = { text: note != null || felt != null ? '✓ 노트와 감상을 저장했어요' : '✓ 별점을 저장했어요' };
       if (note != null) delete S.draft[id];
+      if (felt != null) delete S.felt[id];
       store.set(KEY_DATA, JSON.stringify(S.data));
       announce(b.name + ' ' + n + '점' + (note != null ? ', 감상' : '') + ' 저장됨');
     } catch (e) {
@@ -767,8 +921,15 @@
     if (t.dataset.addgo) { const id = t.dataset.addgo; S.add = null; history.replaceState(null, '', '#b-' + id); applyHash(); render(); return; }
     if (t.dataset.roaster) { S.roaster = t.dataset.roaster; S.open = null; render(); return; }
     if (t.dataset.drop) { S.drop = Number(t.dataset.drop); S.open = null; S.roaster = 'all'; history.replaceState(null, '', '#d-' + S.drop); render(); return; }
+    if (t.dataset.close) { $('#sheet').close(); return; }
+    if (t.dataset.felt != null && t.dataset.felt !== undefined && t.closest('#sheet')) {
+      const b = beans().find((x) => x.id === S.open); if (!b) return;
+      const f = feltOf(b).slice(); const i = f.indexOf(t.dataset.felt);
+      if (i >= 0) f.splice(i, 1); else f.push(t.dataset.felt);
+      S.felt[b.id] = f; render(); return;
+    }
     if (t.dataset.open) {
-      S.open = S.open === t.dataset.open ? null : t.dataset.open;
+      S.open = t.dataset.open;
       history.replaceState(null, '', S.open ? '#b-' + S.open : (S.drop ? '#d-' + S.drop : location.pathname));
       render();
       return;
@@ -778,14 +939,29 @@
       const id = t.dataset.note;
       const b = beans().find((x) => x.id === id);
       const v = S.draft[id] != null ? S.draft[id] : (($('#n-' + id) || {}).value || '');
-      if (b && myScore(b)) rate(id, myScore(b), v.trim());
+      if (b && myScore(b) && dirty(b) && !S.busy[id]) rate(id, myScore(b), v.trim(), feltOf(b).slice());
     }
   });
   document.addEventListener('input', (ev) => {
     const id = ev.target.id || '';
-    if (id.indexOf('n-') === 0) S.draft[id.slice(2)] = ev.target.value;
+    if (id.indexOf('n-') === 0) { S.draft[id.slice(2)] = ev.target.value; const btn = document.querySelector('[data-note="' + id.slice(2) + '"]'); const b = beans().find((x) => x.id === id.slice(2)); if (btn && b) { const d = dirty(b); btn.setAttribute('aria-disabled', String(!!S.busy[b.id] || !d)); btn.textContent = d ? '노트·감상 저장' : '저장됨'; } }
+    if (id.indexOf('fa-') === 0) S.add[id.slice(3)] = ev.target.value;
   });
+  $('#sheet').addEventListener('close', () => {
+    if (!S.open) return;
+    S.open = null;
+    history.replaceState(null, '', S.drop ? '#d-' + S.drop : location.pathname);
+    render();
+  });
+  $('#sheet').addEventListener('click', (ev) => { if (ev.target === ev.currentTarget) ev.currentTarget.close(); });   // 시트 밖 어두운 곳
   document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter' && ev.target.id && ev.target.id.indexOf('fa-') === 0) {
+      ev.preventDefault();
+      const id = ev.target.id.slice(3), v = ev.target.value.replace(/·/g, ' ').trim().slice(0, 20);
+      const b = beans().find((x) => x.id === id);
+      if (b && v) { const f = feltOf(b).slice(); if (f.indexOf(v) < 0) f.push(v); S.felt[id] = f; S.add[id] = ''; render(); const el = $('#fa-' + id); if (el) el.focus(); }
+      return;
+    }
     if (ev.key === 'Enter' && ev.target.id && ev.target.id.indexOf('n-') === 0) {
       const btn = document.querySelector('[data-note="' + ev.target.id.slice(2) + '"]');
       if (btn) btn.click();
@@ -801,10 +977,7 @@
     const b = beans().find((x) => x.id === m[1]);
     if (!b) return;
     S.drop = b.drop; S.open = b.id;
-    requestAnimationFrame(() => {
-      const el = document.getElementById('b-' + b.id);
-      if (el) { el.scrollIntoView({ block: 'start' }); el.classList.add('focus'); }
-    });
+
   }
   window.addEventListener('hashchange', () => { if (takeKey()) { whoami(); return; } if (takeAdd()) return; applyHash(); render(); });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.data) load(false); });
