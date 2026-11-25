@@ -372,6 +372,8 @@
   };
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const pad = (n) => ('0' + n).slice(-2);
+  // 가격: 원화는 ₩35,000, 외화는 그 통화로 소수 둘째 자리까지 ($26.50)
+  const fmtPrice = (n, cur) => { cur = cur || 'KRW'; try { return new Intl.NumberFormat(cur === 'KRW' ? 'ko-KR' : 'en-US', { style: 'currency', currency: cur, minimumFractionDigits: cur === 'KRW' ? 0 : 2, maximumFractionDigits: cur === 'KRW' ? 0 : 2 }).format(n); } catch (e) { return cur + ' ' + n; } };
   const fmtWon = (n) => { try { return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 }).format(n); } catch (e) { return '₩' + n; } };
   const ICON = {
     star: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2l2.7 5.5 6 .9-4.35 4.25 1.03 6L12 17l-5.38 2.85 1.03-6L3.3 9.6l6-.9z"/></svg>',
@@ -510,7 +512,7 @@
     const head = '<h2 id="addTitle">TTCC에 담기</h2>';
     const bean = it ? `<div style="display:flex;flex-direction:column;gap:6px">
         <span class="bean-nm" translate="no">${esc(it.name)}</span>
-        <span class="bean-mt">${rtTag({ roaster: it.sey ? '' : it.roaster })}<span>${esc([it.country, it.process, it.price ? fmtWon(it.price) : ''].filter(Boolean).join(' · '))}</span></span>
+        <span class="bean-mt">${rtTag({ roaster: it.sey ? '' : it.roaster })}<span>${esc([it.country, it.process, it.price ? fmtPrice(it.price, it.currency) : ''].filter(Boolean).join(' · '))}</span></span>
         ${it.notes && it.notes.length ? `<div class="chips">${it.notes.slice(0, 5).map((n) => `<span>${esc(n)}</span>`).join('')}</div>` : ''}
       </div>` : '';
     const close = '<button type="button" class="btn-line" data-addclose="1">닫기</button>';
@@ -667,7 +669,7 @@
         b.harvest && `<i>수확</i>${esc(b.harvest)}`,
         b.varieties.length && `<i>품종</i>${esc(b.varieties.join(' · '))}`,
         b.process && `<i>가공</i>${esc(b.process)}`,
-        b.price && `<i>가격</i>${esc(fmtWon(b.price))}${b.size ? ` · ${esc(b.size)}` : ''}`,
+        b.price && `<i>가격</i>${esc(fmtPrice(b.price, b.currency))}${b.size ? ` · ${esc(b.size)}` : ''}`,
         /^https:\/\//i.test(b.url || '') && `<i aria-hidden="true"></i><a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">상품 페이지 ${ICON.out}<span class="sr"> (새 창)</span></a>`
       ].filter(Boolean).map((x) => `<span>${x}</span>`).join('');
       let panel = '';
