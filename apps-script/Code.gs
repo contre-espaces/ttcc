@@ -351,7 +351,7 @@ function clubData_(fresh) {
     const m = P.sel(pr['멤버']);
     const score = P.num(pr['별점']);
     P.rel(pr['원두']).forEach((bid) => {
-      if (byId[bid] && m && score) byId[bid].ratings[m] = { score: score, note: P.text(pr['한 줄 감상']) };
+      if (byId[bid] && m && score) byId[bid].ratings[m] = { score: score, note: P.text(pr['한 줄 감상']), felt: P.text(pr['느낀 노트']).split(/\s*·\s*/).filter(Boolean) };
     });
   });
 
@@ -388,6 +388,8 @@ function saveRating_(b) {
   if (CFG.MEMBERS.indexOf(member) < 0) throw new Error('멤버가 올바르지 않습니다');
   if (!(score >= 1 && score <= 5 && Math.round(score) === score)) throw new Error('별점은 1~5');
   const note = b.note == null ? null : String(b.note).slice(0, 300);
+  // 느낀 컵 노트: 최대 8개, 하나에 20자 (보낸 것만 덮어씀)
+  const felt = Array.isArray(b.felt) ? b.felt.map((x) => String(x).replace(/·/g, ' ').trim().slice(0, 20)).filter(Boolean).filter((x, i, a) => a.indexOf(x) === i).slice(0, 8) : null;
 
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
@@ -404,6 +406,7 @@ function saveRating_(b) {
     });
     const props = { '기록': W.title(no + ' · ' + member), '별점': W.num(score) };
     if (note !== null) props['한 줄 감상'] = W.text(note);
+    if (felt !== null) props['느낀 노트'] = W.text(felt.join(' · '));
 
     if (found.length) {
       notion_('patch', 'pages/' + found[0].id, { properties: props });
