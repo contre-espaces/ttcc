@@ -86,7 +86,7 @@ function normId_(id) { return String(id || '').replace(/-/g, ''); }
 
 // ---------------------------------------------------------------- 1) 원두 자동 채우기
 
-/** 10분마다 실행. 상품 URL이 있고 아직 안 채운(국가 비어 있음) 원두를 채움 */
+/** 10분마다 실행. 상품 URL이 있고 아직 안 채운 원두(국가·번호·링크·자세한 정보)를 채움 */
 function fillBeans() {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(5000)) return;
@@ -96,7 +96,7 @@ function fillBeans() {
       const pr = pg.properties;
       if (!P.url(pr['상품 URL']) && isUrl_(P.text(pr['원두명']))) return true;   // 원두명 칸에 URL을 붙여넣은 경우
       // SEY가 아닌 원두는 국가를 손으로 적으므로, 국가가 비어 있어도 다시 시도하지 않음
-      return P.url(pr['상품 URL']) && ((isSey_(pr) && !P.sel(pr['국가'])) || !P.text(pr['원두 번호']) || !P.url(pr['별점 링크']));
+      return P.url(pr['상품 URL']) && ((isSey_(pr) && !P.sel(pr['국가'])) || !P.text(pr['원두 번호']) || !P.url(pr['별점 링크']) || !P.text(pr['생산자']));   // 생산자 비어 있음: 레이더 정보로 자세한 칸 채우기
     });
     if (!todo.length) return;
     const radar = radarIndex_();
@@ -132,12 +132,18 @@ function fillOne_(pg, all, radar) {
     if (info) {
       if (nameEmpty && info.name) props['원두명'] = W.title(info.name);
       if (info.country) props['국가'] = W.sel(info.country);
-      if (!P.text(pr['지역/생산자']) && info.origin) props['지역/생산자'] = W.text(info.origin);
+      if (!P.text(pr['지역']) && info.origin) props['지역'] = W.text(info.origin);
       if (info.varieties.length) props['품종'] = W.multi(info.varieties);
       if (info.process) props['가공'] = W.sel(info.process);
       if (info.notes.length) props['맛 노트'] = W.multi(info.notes);
       if (P.num(pr['가격']) == null && info.price) props['가격'] = W.num(info.price);
     }
+  }
+
+  // 레이더에 있는 원두: 자세한 정보 칸은 비어 있는 것만 채움 (예전에 담은 원두도 다음 채우기 때 채워짐)
+  if (hit) {
+    const more = { '생산자': hit.producer, '농장': hit.farm, '고도': hit.altitude, '수확': hit.harvest, '용량': hit.size, '가공 과정': hit.procText, '원두 설명': hit.desc };
+    Object.keys(more).forEach((k) => { if (more[k] && !P.text(pr[k])) props[k] = W.text(more[k]); });
   }
 
   // 기본값
@@ -170,18 +176,23 @@ function nextNo_(drop, kind, all, selfId) {   // 구독 01-1 · 추가구매 01-
 }
 
 /** 신상 원두 레이더 API(공개) 색인 — 모든 로스터리를 상품 주소로, SEY는 상품 handle로도 찾음 */
-function radarIndex_() {
+function radarIndex_(noText) {   // noText: 담기 미리보기처럼 설명이 필요 없을 때 (빠르게)
   const idx = { byUrl: {}, byHandle: {} };
   try {
     const res = UrlFetchApp.fetch(CFG.RADAR_API, { muteHttpExceptions: true, followRedirects: true });
     if (res.getResponseCode() !== 200) return idx;
     const d = JSON.parse(res.getContentText());
+    let texts = {};
+    if (!noText) try {   // 가공 과정·원두 설명 번역 (레이더 part=text)
+      const tr = UrlFetchApp.fetch(CFG.RADAR_API.replace('part=list', 'part=text'), { muteHttpExceptions: true, followRedirects: true });
+      if (tr.getResponseCode() === 200) texts = JSON.parse(tr.getContentText()).texts || {};
+    } catch (e) { console.warn('레이더 설명 실패: ' + e.message); }
     const vs = {};
     (d.vendors || []).forEach((v) => { vs[v.id] = v; });
     (d.items || []).forEach((it) => {
       const v = vs[it.vendor] || {};
       const sey = /^sey/i.test(String(v.short || v.name || it.vendor || ''));
-      const info = fromRadar_(it, sey ? '' : roasterName_(v.name || v.short || it.vendor || ''), sey);
+      const info = fromRadar_(it, sey ? '' : roasterName_(v.name || v.short || it.vendor || ''), sey, texts[it.key]);
       const u = normUrl_(it.url);
       if (u) idx.byUrl[u] = info;
       const h = sey ? handleOf_(it.url) : '';
@@ -210,12 +221,14 @@ function normUrl_(u) {
   return m ? (m[1] + m[2].replace(/\/+$/, '')).toLowerCase() : '';
 }
 
-function fromRadar_(it, roaster, sey) {
+function fromRadar_(it, roaster, sey, tx) {
   const vars = Array.isArray(it.vars) && it.vars.length
     ? it.vars.map((x) => x.n)
     : String(it.variety || '').split(/\s*(?:,|\/|&|\band\b|·)\s*/i);
-  const origin = [Array.isArray(it.regionSub) ? it.regionSub.join(' · ') : (it.regionTop || it.region || ''), it.producer, it.farm]
-    .filter(Boolean).join(' · ');
+  const origin = [it.regionTop, ...(Array.isArray(it.regionSub) ? it.regionSub : [])].filter(Boolean).join(' · ') || it.region || '';
+  const ss = it.sizes || [];
+  const base = it.unit && ss[it.unit.i] ? ss[it.unit.i] : ss[0];
+  tx = tx || {};
   return {
     name: [it.producer, it.farm].filter(Boolean).join(' · ') || it.title || '',
     country: it.countryKo || '',
@@ -226,7 +239,14 @@ function fromRadar_(it, roaster, sey) {
     price: basisPrice_(it),
     roaster: roaster || '',
     sey: !!sey,
-    url: it.url || ''
+    url: it.url || '',
+    producer: it.producer || '',
+    farm: it.farm || '',
+    altitude: it.altitude || '',
+    harvest: it.harvest || '',
+    size: base && base.label ? String(base.label) : '',
+    procText: tx.procKo || tx.procEn || '',
+    desc: tx.descKo || tx.descEn || ''
   };
 }
 
@@ -299,7 +319,14 @@ function clubData_(fresh) {
       no: P.text(pr['원두 번호']),
       kind: P.sel(pr['구분']),
       country: P.sel(pr['국가']),
-      origin: P.text(pr['지역/생산자']),
+      origin: P.text(pr['지역']),
+      producer: P.text(pr['생산자']),
+      farm: P.text(pr['농장']),
+      altitude: P.text(pr['고도']),
+      harvest: P.text(pr['수확']),
+      size: P.text(pr['용량']),
+      procText: P.text(pr['가공 과정']),
+      desc: P.text(pr['원두 설명']),
       varieties: P.multi(pr['품종']),
       process: P.sel(pr['가공']),
       notes: P.multi(pr['맛 노트']),
@@ -403,7 +430,7 @@ function latestDrop_(all) {
 
 /** 담기 전 확인 화면용 (공개 레이더 정보만) — 레이더에 없는 주소는 found:false */
 function previewBean_(url) {
-  const radar = radarIndex_();
+  const radar = radarIndex_(true);
   const hit = radarFind_(radar, url);
   const all = queryAll_(CFG.BEANS_DB);
   const dup = findByUrl_(all, url);
