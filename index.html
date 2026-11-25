@@ -288,12 +288,6 @@
     .drops button:hover, .rfil button:hover, .st:hover, .btn-line:hover, .note button:hover { transform: translateY(-1px); }
   }
   @media (prefers-reduced-motion: reduce) { .drops button, .rfil button, .st, .btn-line, .note button { transition: none; transform: none !important; } }
-
-/* 한글 줄바꿈: 낱말 중간에서 끊지 않고(keep-all), 마지막 줄에 한 낱말만 남지 않게(pretty) */
-body { word-break: keep-all; overflow-wrap: break-word; }
-p, li, dd, dt, .cap, .unit, .statusline, .empty, .tr-note { text-wrap: pretty; }
-h1, h2, h3, .producer, .bean-nm, .row .nm { text-wrap: balance; }
-.nmp { display: inline-block; max-width: 100%; }
 </style>
 </head>
 <body>
@@ -312,7 +306,7 @@ h1, h2, h3, .producer, .bean-nm, .row .nm { text-wrap: balance; }
   <section class="card-stone" id="picker" hidden aria-labelledby="pickerTitle">
     <div>
       <h2 id="pickerTitle">지금은 구경만 할 수 있어요</h2>
-      <p id="pickerTxt">카톡으로 받은 내 링크로 한 번만 들어오면<br>별점을 남길 수 있어요.</p>
+      <p id="pickerTxt">카톡으로 받은 내 링크로 한 번만 들어오면 별점을 남길 수 있어요.</p>
     </div>
   </section>
 
@@ -497,7 +491,7 @@ h1, h2, h3, .producer, .bean-nm, .row .nm { text-wrap: balance; }
     const it = a.item;
     const head = '<h2 id="addTitle">TTCC에 담기</h2>';
     const bean = it ? `<div style="display:flex;flex-direction:column;gap:6px">
-        <span class="bean-nm" translate="no">${nmHTML(it.name)}</span>
+        <span class="bean-nm" translate="no">${esc(it.name)}</span>
         <span class="bean-mt">${rtTag({ roaster: it.sey ? '' : it.roaster })}<span>${esc([it.country, it.process, it.price ? fmtWon(it.price) : ''].filter(Boolean).join(' · '))}</span></span>
         ${it.notes && it.notes.length ? `<div class="chips">${it.notes.slice(0, 5).map((n) => `<span>${esc(n)}</span>`).join('')}</div>` : ''}
       </div>` : '';
@@ -540,8 +534,6 @@ h1, h2, h3, .producer, .bean-nm, .row .nm { text-wrap: balance; }
   const avgOf = (b) => { const v = Object.values(b.ratings).map((r) => r.score); return v.length ? v.reduce((a, c) => a + c, 0) / v.length : null; };
   const daysSince = (iso) => { if (!iso) return null; const t = new Date(iso + 'T00:00:00+09:00'); const n = Math.floor((Date.now() - t.getTime()) / 86400000); return n >= 0 ? n : null; };
   // 로스터리 라벨: 노션 '로스터리' 칸이 비어 있으면 SEY. 이름마다 늘 같은 색
-  // 이름 줄바꿈은 ' · ' 자리에서: 조각마다 묶어서 낱말 중간·조각 중간에서 끊기지 않게
-  const nmHTML = (n) => String(n || '').split(/\s+·\s+/).reduce((o, x) => { if (o.length && x.length <= 4) o[o.length - 1] += ' · ' + x; else o.push(x); return o; }, []).map((x, i, a) => `<span class="nmp">${esc(x)}${i < a.length - 1 ? ' ·' : ''}</span>`).join(' ');
   const roasterOf = (b) => String(b.roaster || '').trim() || 'SEY';
   const RT = ['#fcab79', '#a8d8c4', '#f4d35e', '#d4b8ec', '#f4a0b4', '#e8c79e'];
   const rtColor = (n) => { if (n === 'SEY') return RT[0]; let h = 0; for (const c of n) h = (h * 31 + c.codePointAt(0)) >>> 0; return RT[1 + (h % (RT.length - 1))]; };
@@ -679,13 +671,13 @@ h1, h2, h3, .producer, .bean-nm, .row .nm { text-wrap: balance; }
                   <button type="button" data-note="${b.id}" aria-disabled="${!!S.busy[b.id]}">${S.busy[b.id] ? '저장 중…' : '저장'}</button>
                 </span>
               </label>`
-            : `<div class="cap">블라인드 커핑이라<br>내 점수를 남겨야 다른 멤버 점수가 보여요.${others ? `<br>${others}명이 먼저 평가했어요.` : ''}</div>`}`}
+            : `<div class="cap">블라인드 커핑이라 내 점수를 남겨야 다른 멤버 점수가 보여요.${others ? ` ${others}명이 먼저 평가했어요.` : ''}</div>`}`}
         </div>`;
       }
       return `<article class="bean" id="b-${b.id}">
         <button type="button" class="row" aria-expanded="${open}" aria-controls="p-${b.id}" data-open="${b.id}">
           <span class="no mono">${esc(b.no)}</span>
-          <span class="tx"><span class="nm" translate="no">${nmHTML(b.name)}</span><span class="mt">${rtTag(b)}<span>${esc(metaOf(b))}</span></span></span>
+          <span class="tx"><span class="nm" translate="no">${esc(b.name)}</span><span class="mt">${rtTag(b)}<span>${esc(metaOf(b))}</span></span></span>
           <span class="st ${mine ? 'done' : ''}"${mine ? ` aria-label="내 점수 ${mine}점"` : ''}>${status}</span>
         </button>${panel}
       </article>`;
@@ -702,7 +694,7 @@ h1, h2, h3, .producer, .bean-nm, .row .nm { text-wrap: balance; }
     el.innerHTML = (ranked.length
       ? ranked.map((x, i) => `<div class="hall-row">
           <span class="rk mono num">${i + 1}</span>
-          <span class="tx"><span class="nm" translate="no">${nmHTML(x.b.name)}</span><span class="mt">${rtTag(x.b)}<span>${[`DROP ${pad(x.b.drop)}`, x.b.country, Object.keys(x.b.ratings).length + '명'].filter(Boolean).map(esc).join(' · ')}</span></span></span>
+          <span class="tx"><span class="nm" translate="no">${esc(x.b.name)}</span><span class="mt">${rtTag(x.b)}<span>${[`DROP ${pad(x.b.drop)}`, x.b.country, Object.keys(x.b.ratings).length + '명'].filter(Boolean).map(esc).join(' · ')}</span></span></span>
           <span class="av">${fmtNum.format(x.avg)}</span>
         </div>`).join('')
       : '<div class="empty">두 명 이상 평가한 원두가 생기면 여기에 올라와요.</div>');
