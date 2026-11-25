@@ -338,6 +338,7 @@ function clubData_(fresh) {
       arrived: P.date(pr['도착일']),
       price: P.num(pr['가격']),
       currency: P.sel(pr['통화']) || 'KRW',
+      rest: P.num(pr['디개싱(일)']),   // 로스팅 후 며칠부터 맛보기 좋은지 (비우면 페이지에서 7일)
       url: P.url(pr['상품 URL']),
       roaster: isSey_(pr) ? '' : P.sel(pr['로스터리']),
       ratings: {}
