@@ -282,12 +282,30 @@
   /* tasteskill 정리: 칩·링크도 손가락 44px, 버튼은 올리면 살짝 뜨고 누르면 들어감, 정보 줄에는 이름표 */
   .rfil button { height: 44px; }
   .facts span { display: flex; gap: 10px; }
-  .facts i { font-style: normal; flex: none; width: 28px; color: var(--muted-foreground); opacity: .8; }
+  .facts i { font-style: normal; flex: none; width: 40px; color: var(--muted-foreground); opacity: .8; }
   .facts a { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; }
   @media (hover: hover) and (pointer: fine) {
     .drops button:hover, .rfil button:hover, .st:hover, .btn-line:hover, .note button:hover { transform: translateY(-1px); }
   }
   @media (prefers-reduced-motion: reduce) { .drops button, .rfil button, .st, .btn-line, .note button { transition: none; transform: none !important; } }
+
+  /* 원두 정보: 로스터리 설명은 접어 두기 */
+  .story { border-top: 1px solid var(--hair); padding-top: 4px; }
+  .story > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 6px; min-height: 44px; font-size: 14px; font-weight: 500; color: var(--foreground); }
+  .story > summary::-webkit-details-marker { display: none; }
+  .story > summary::after { content: "+"; margin-left: auto; font-size: 18px; color: var(--muted-foreground); }
+  .story[open] > summary::after { content: "−"; }
+  .story h4 { margin: 8px 0 4px; font-size: 12px; font-weight: 500; color: var(--muted-foreground); letter-spacing: .02em; }
+  .story p { margin: 0 0 8px; font-size: 14px; line-height: 1.7; color: var(--foreground); }
+  /* 멤버 감상: 점수 칸과 따로, 읽기 좋은 크기로 */
+  .reviews { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .reviews li { padding: 12px 14px; border-radius: 14px; background: var(--glass-sub); box-shadow: var(--glass-hi); display: flex; flex-direction: column; gap: 6px; }
+  .rv-who { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--slate); }
+  .rv-who b { font-weight: 500; color: var(--foreground); }
+  .rv-sc { display: inline-flex; align-items: center; gap: 2px; color: var(--star); font-variant-numeric: tabular-nums; }
+  .rv-sc .ic { fill: currentColor; font-size: .9em; }
+  .reviews p, .story p { word-break: keep-all; overflow-wrap: anywhere; }
+  .reviews p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--foreground); overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
@@ -306,7 +324,7 @@
   <section class="card-stone" id="picker" hidden aria-labelledby="pickerTitle">
     <div>
       <h2 id="pickerTitle">지금은 구경만 할 수 있어요</h2>
-      <p id="pickerTxt">카톡으로 받은 내 링크로 한 번만 들어오면 별점을 남길 수 있어요.</p>
+      <p id="pickerTxt">카톡 링크로 들어오면 별점을 남길 수 있어요.</p>
     </div>
   </section>
 
@@ -408,7 +426,7 @@
       setStatus('');
     } catch (e) {
       S.failed = !S.data;
-      setStatus(S.data ? '최신 정보를 못 불러왔어요. 저장해 둔 화면이에요.' : '');
+      setStatus(S.data ? '최신 정보를 못 불러와 저장본을 보여줘요.' : '');
     }
     applyHash();
     render();
@@ -641,9 +659,13 @@
       const others = ['IB', 'HJ', 'KC'].filter((w) => w !== S.me && b.ratings[w]).length;
       const msg = S.msg[b.id];
       const facts = [
-        b.origin && `<i>산지</i>${esc(b.origin)}`,
+        (b.country || b.origin) && `<i>산지</i>${esc([b.country, b.origin].filter(Boolean).join(' · '))}`,
+        (b.producer || b.farm) && `<i>생산자</i>${esc([b.producer, b.farm].filter(Boolean).join(' · '))}`,
+        b.altitude && `<i>고도</i>${esc(b.altitude)}`,
+        b.harvest && `<i>수확</i>${esc(b.harvest)}`,
         b.varieties.length && `<i>품종</i>${esc(b.varieties.join(' · '))}`,
         b.process && `<i>가공</i>${esc(b.process)}`,
+        b.price && `<i>가격</i>${esc(fmtWon(b.price))}${b.size ? ` · ${esc(b.size)}` : ''}`,
         /^https:\/\//i.test(b.url || '') && `<i aria-hidden="true"></i><a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">상품 페이지 ${ICON.out}<span class="sr"> (새 창)</span></a>`
       ].filter(Boolean).map((x) => `<span>${x}</span>`).join('');
       let panel = '';
@@ -651,6 +673,7 @@
         panel = `<div class="panel" id="p-${b.id}">
           ${b.notes.length ? `<div class="chips">${b.notes.map((n) => `<span>${esc(n)}</span>`).join('')}</div>` : ''}
           ${facts ? `<div class="facts">${facts}</div>` : ''}
+          ${b.procText || b.desc ? `<details class="story"><summary>로스터리 설명</summary>${[['가공 과정', b.procText], ['원두 이야기', b.desc]].filter((x) => x[1]).map(([h, x]) => `<h4>${h}</h4><p>${esc(x)}</p>`).join('')}</details>` : ''}
           ${!S.me ? '<div class="cap">내 링크로 들어오면 별점을 남길 수 있어요.</div>' : `
             <div style="display:flex;flex-direction:column;gap:6px">
               <div class="cap">내 점수 · ${S.me}</div>
@@ -662,8 +685,9 @@
             ${mine ? `
               <div class="scores">${['IB', 'HJ', 'KC'].map((w) => {
                 const r = b.ratings[w];
-                return `<div><span class="who mono" translate="no">${w}${w === S.me ? ' (나)' : ''}</span><span class="val">${r ? ICON.star + r.score : '<span aria-label="아직 없음">–</span>'}</span>${r && r.note ? `<span class="nt">${esc(r.note)}</span>` : ''}</div>`;
+                return `<div><span class="who mono" translate="no">${w}${w === S.me ? ' (나)' : ''}</span><span class="val">${r ? ICON.star + r.score : '<span aria-label="아직 없음">–</span>'}</span></div>`;
               }).join('')}</div>
+              ${(() => { const rv = ['IB', 'HJ', 'KC'].filter((w) => b.ratings[w] && b.ratings[w].note); return rv.length ? `<ul class="reviews" aria-label="한 줄 감상">${rv.map((w) => `<li><span class="rv-who"><b class="mono" translate="no">${w}</b><span class="rv-sc">${ICON.star}${b.ratings[w].score}</span></span><p>${esc(b.ratings[w].note)}</p></li>`).join('')}</ul>` : ''; })()}
               <label style="display:flex;flex-direction:column;gap:6px">
                 <span class="cap">한 줄 감상 (선택)</span>
                 <span class="note">
@@ -671,7 +695,7 @@
                   <button type="button" data-note="${b.id}" aria-disabled="${!!S.busy[b.id]}">${S.busy[b.id] ? '저장 중…' : '저장'}</button>
                 </span>
               </label>`
-            : `<div class="cap">블라인드 커핑이라 내 점수를 남겨야 다른 멤버 점수가 보여요.${others ? ` ${others}명이 먼저 평가했어요.` : ''}</div>`}`}
+            : `<div class="cap">${others ? `내 점수를 남기면 ${others}명의 점수가 보여요.` : '내 점수를 남기면 다른 멤버 점수가 보여요.'}</div>`}`}
         </div>`;
       }
       return `<article class="bean" id="b-${b.id}">
@@ -711,7 +735,7 @@
     render();
     try {
       await send({ bean: id, key: S.key, member: S.me, score: n, note: note });
-      S.msg[id] = { text: note != null ? '✓ 감상까지 저장됐어요' : '✓ 저장됐어요. 다른 별을 누르면 바뀌어요' };
+      S.msg[id] = { text: note != null ? '✓ 감상까지 저장됐어요' : '✓ 저장됐어요' };
       if (note != null) delete S.draft[id];
       store.set(KEY_DATA, JSON.stringify(S.data));
       announce(b.name + ' ' + n + '점' + (note != null ? ', 감상' : '') + ' 저장됨');
