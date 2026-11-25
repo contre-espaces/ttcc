@@ -136,7 +136,10 @@ function fillOne_(pg, all, radar) {
       if (info.varieties.length) props['품종'] = W.multi(info.varieties);
       if (info.process) props['가공'] = W.sel(info.process);
       if (info.notes.length) props['맛 노트'] = W.multi(info.notes);
-      if (P.num(pr['가격']) == null && info.price) props['가격'] = W.num(info.price);
+      if (P.num(pr['가격']) == null && info.price) {
+        props['가격'] = W.num(info.price);
+        if (!P.sel(pr['통화'])) props['통화'] = W.sel(info.currency || 'KRW');   // 외화는 그 통화 그대로 (예: USD 26.50)
+      }
     }
   }
 
@@ -238,6 +241,7 @@ function fromRadar_(it, roaster, sey, tx) {
     process: it.procKo || it.process || '',
     notes: (it.notes || []).map((s) => String(s).trim()).filter(Boolean),
     price: basisPrice_(it),
+    currency: it.currency && it.currency !== 'KRW' ? String(it.currency) : 'KRW',
     roaster: roaster || '',
     sey: !!sey,
     url: it.url || '',
@@ -251,12 +255,11 @@ function fromRadar_(it, roaster, sey, tx) {
   };
 }
 
-function basisPrice_(it) {   // 원화: 원화 판매가, 외화는 레이더가 바꿔 둔 원화(krw)
+function basisPrice_(it) {   // 기준 용량의 판매가 — 외화는 그 통화 그대로 (소수 둘째 자리까지), 원화는 원화
   const ss = it.sizes || [];
   const b = it.unit && ss[it.unit.i] ? ss[it.unit.i] : ss[0];
-  if (!b) return null;
-  if (!it.currency || it.currency === 'KRW') return b.price > 0 ? Number(b.price) : null;
-  return b.krw > 0 ? Math.round(Number(b.krw)) : null;
+  if (!b || !(b.price > 0)) return null;
+  return !it.currency || it.currency === 'KRW' ? Math.round(Number(b.price)) : Math.round(Number(b.price) * 100) / 100;
 }
 
 /** 레이더 목록에 없을 때: Shopify 공개 상품 정보(.js)에서 이름·가격만 */
@@ -334,6 +337,7 @@ function clubData_(fresh) {
       roast: P.date(pr['로스팅 날짜']),
       arrived: P.date(pr['도착일']),
       price: P.num(pr['가격']),
+      currency: P.sel(pr['통화']) || 'KRW',
       url: P.url(pr['상품 URL']),
       roaster: isSey_(pr) ? '' : P.sel(pr['로스터리']),
       ratings: {}
@@ -437,7 +441,7 @@ function previewBean_(url) {
   const dup = findByUrl_(all, url);
   return {
     ok: true, found: !!hit,
-    item: hit ? { name: hit.name, roaster: hit.sey ? 'SEY' : hit.roaster, country: hit.country, process: hit.process, notes: hit.notes, price: hit.price, sey: hit.sey } : null,
+    item: hit ? { name: hit.name, roaster: hit.sey ? 'SEY' : hit.roaster, country: hit.country, process: hit.process, notes: hit.notes, price: hit.price, currency: hit.currency, sey: hit.sey } : null,
     dup: dup ? normId_(dup.id) : null,
     latestDrop: latestDrop_(all)
   };
