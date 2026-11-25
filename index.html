@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TTCC · The Thursday Cupping Club</title>
-<meta name="description" content="세 명이 한 봉을 나눠 마시고, 점수를 남깁니다.">
+<meta name="description" content="목요일마다 한 봉을 나눠 마시고 점수를 남기는 커핑 클럽.">
 <meta property="og:title" content="TTCC · The Thursday Cupping Club">
 <meta property="og:description" content="이번 DROP 별점 남기러 가기">
 <meta property="og:type" content="website">
@@ -278,6 +278,16 @@
     *, *::before, *::after { animation: none !important; transition-property: color, background-color, border-color, opacity !important; }
   }
   [hidden] { display: none !important; }
+
+  /* tasteskill 정리: 칩·링크도 손가락 44px, 버튼은 올리면 살짝 뜨고 누르면 들어감, 정보 줄에는 이름표 */
+  .rfil button { height: 44px; }
+  .facts span { display: flex; gap: 10px; }
+  .facts i { font-style: normal; flex: none; width: 28px; color: var(--muted-foreground); opacity: .8; }
+  .facts a { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; }
+  @media (hover: hover) and (pointer: fine) {
+    .drops button:hover, .rfil button:hover, .st:hover, .btn-line:hover, .note button:hover { transform: translateY(-1px); }
+  }
+  @media (prefers-reduced-motion: reduce) { .drops button, .rfil button, .st, .btn-line, .note button { transition: none; transform: none !important; } }
 </style>
 </head>
 <body>
@@ -398,7 +408,7 @@
       setStatus('');
     } catch (e) {
       S.failed = !S.data;
-      setStatus(S.data ? '최신 정보를 못 불러와서 저장된 화면을 보여드려요.' : '');
+      setStatus(S.data ? '최신 정보를 못 불러왔어요. 저장해 둔 화면이에요.' : '');
     }
     applyHash();
     render();
@@ -631,10 +641,10 @@
       const others = ['IB', 'HJ', 'KC'].filter((w) => w !== S.me && b.ratings[w]).length;
       const msg = S.msg[b.id];
       const facts = [
-        b.origin && esc(b.origin),
-        b.varieties.length && esc(b.varieties.join(' · ')),
-        b.process && esc(b.process),
-        /^https:\/\//i.test(b.url || '') && `<a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">상품 페이지 ${ICON.out}<span class="sr"> (새 창)</span></a>`
+        b.origin && `<i>산지</i>${esc(b.origin)}`,
+        b.varieties.length && `<i>품종</i>${esc(b.varieties.join(' · '))}`,
+        b.process && `<i>가공</i>${esc(b.process)}`,
+        /^https:\/\//i.test(b.url || '') && `<i aria-hidden="true"></i><a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">상품 페이지 ${ICON.out}<span class="sr"> (새 창)</span></a>`
       ].filter(Boolean).map((x) => `<span>${x}</span>`).join('');
       let panel = '';
       if (open) {
@@ -661,7 +671,7 @@
                   <button type="button" data-note="${b.id}" aria-disabled="${!!S.busy[b.id]}">${S.busy[b.id] ? '저장 중…' : '저장'}</button>
                 </span>
               </label>`
-            : `<div class="cap">블라인드 커핑: 내 점수를 남기면 다른 멤버 점수가 열려요. (${others}명 평가함)</div>`}`}
+            : `<div class="cap">블라인드 커핑이라 내 점수를 남겨야 다른 멤버 점수가 보여요.${others ? ` ${others}명이 먼저 평가했어요.` : ''}</div>`}`}
         </div>`;
       }
       return `<article class="bean" id="b-${b.id}">
@@ -701,7 +711,7 @@
     render();
     try {
       await send({ bean: id, key: S.key, member: S.me, score: n, note: note });
-      S.msg[id] = { text: note != null ? '✓ 감상까지 저장됐어요' : '✓ 저장됐어요 · 다시 누르면 바뀌어요' };
+      S.msg[id] = { text: note != null ? '✓ 감상까지 저장됐어요' : '✓ 저장됐어요. 다른 별을 누르면 바뀌어요' };
       if (note != null) delete S.draft[id];
       store.set(KEY_DATA, JSON.stringify(S.data));
       announce(b.name + ' ' + n + '점' + (note != null ? ', 감상' : '') + ' 저장됨');
