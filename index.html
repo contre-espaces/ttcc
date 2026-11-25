@@ -404,6 +404,16 @@
     .felt.issue button[aria-pressed="true"] { background: rgba(255,240,230,.88); border-color: transparent; color: #2a1a10; }
   }
   .rc-edit { margin: -8px 0 0; }
+
+  /* 지난 DROP: 접힌 한 줄씩 */
+  .past { padding: 4px 14px; }
+  .past-d + .past-d { border-top: 1px solid var(--hair); }
+  .past-h { width: 100%; min-height: 64px; padding: 12px 2px; border: 0; background: transparent; text-align: left; display: grid; grid-template-columns: auto 1fr auto; align-items: center; column-gap: 12px; color: var(--foreground); }
+  .past-n { font-size: 15px; font-weight: 500; color: var(--primary); }
+  .past-s { font-size: 13px; color: var(--slate); min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .past-top { color: var(--foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .past-c { font-size: 20px; color: var(--slate); width: 24px; text-align: center; }
+  .past-b { padding-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -433,7 +443,6 @@
       <div class="mine" id="mine">내 평가 <b id="mineN">0/0</b></div>
       <div class="track" aria-hidden="true"><i id="trackFill"></i></div>
     </div>
-    <div class="drops" id="drops" aria-label="DROP 고르기"></div>
   </section>
 
   <div class="status" id="status" role="status" aria-live="polite"></div>
@@ -443,6 +452,14 @@
       <div class="sec-h"><h2 id="hLine">라인업</h2><span id="lineCount" class="num"></span></div>
       <div class="rfil" id="rfil" role="group" aria-label="로스터리" hidden></div>
       <div class="list" id="viewDrop"></div>
+    </section>
+    <section aria-labelledby="hTodo" id="secTodo" hidden>
+      <div class="sec-h"><h2 id="hTodo">밀린 평가</h2><span id="todoN"></span></div>
+      <div class="list" id="viewTodo"></div>
+    </section>
+    <section aria-labelledby="hPast" id="secPast" hidden>
+      <div class="sec-h"><h2 id="hPast">지난 DROP</h2><span>최신순</span></div>
+      <div class="list past" id="viewPast"></div>
     </section>
     <section aria-labelledby="hHall">
       <div class="sec-h"><h2 id="hHall">명예의 전당</h2><span>2명 이상 평가 · 평균 순</span></div>
@@ -649,7 +666,7 @@
   // ---------- 계산 ----------
   const beans = () => (S.data && S.data.beans) || [];
   const drops = () => [...new Set(beans().map((b) => b.drop))].sort((a, b) => b - a);
-  const curDrop = () => (S.drop && drops().indexOf(S.drop) >= 0 ? S.drop : drops()[0]);
+  const curDrop = () => drops()[0];   // 맨 위 카드·라인업은 항상 최신 DROP (S.drop은 펼친 지난 DROP)
   const inDrop = (d) => beans().filter((b) => b.drop === d);
   const myScore = (b) => (S.me && b.ratings[S.me] ? b.ratings[S.me].score : 0);
   const avgOf = (b) => { const v = Object.values(b.ratings).map((r) => r.score); return v.length ? v.reduce((a, c) => a + c, 0) / v.length : null; };
@@ -674,7 +691,9 @@
   const fmtNum = new Intl.NumberFormat('ko-KR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const fmtDay = new Intl.DateTimeFormat('ko-KR', { month: 'numeric', day: 'numeric', timeZone: 'Asia/Seoul' });
   const dayText = (iso) => {
-    const parts = fmtDay.formatToParts(new Date(iso + 'T12:00:00+09:00'));
+    const dt = new Date(String(iso).slice(0, 10) + 'T12:00:00+09:00');
+    if (isNaN(dt)) return '';   // 노션에 잘못 적힌 날짜가 있어도 화면 전체가 멈추지 않게
+    const parts = fmtDay.formatToParts(dt);
     const v = (t) => (parts.find((x) => x.type === t) || {}).value || '';
     return pad(v('month')) + '.' + pad(v('day'));
   };
@@ -689,7 +708,7 @@
     if (d.felt != null) return { sel: '[data-felt="' + CSS.escape(d.felt) + '"]' };
     if (el.id && el.id.indexOf('fa-') === 0) return { sel: '#' + el.id, caret: el.selectionStart };
     if (d.open) return { sel: '[data-open="' + d.open + '"]' };
-    if (d.drop) return { sel: '[data-drop="' + d.drop + '"]' };
+    if (d.past) return { sel: '[data-past="' + d.past + '"]' };
     if (d.me) return { sel: '[data-me="' + d.me + '"]' };
     return null;
   }
@@ -721,16 +740,12 @@
     const list = d ? inDrop(d) : [];
     $('#dropBox').hidden = !d;
     if (d) {
-      const isLatest = d === drops()[0];
       const arrived = list.map((b) => b.arrived).filter(Boolean).sort()[0];
-      const lbl = [isLatest ? '' : '지난 DROP', arrived ? dayText(arrived) + ' 도착' : ''].filter(Boolean).join(' · ');
-      $('#dropLbl').textContent = lbl; $('#dropLbl').hidden = !lbl;
+      $('#dropLbl').textContent = arrived ? dayText(arrived) + ' 도착' : ''; $('#dropLbl').hidden = !arrived;
       $('#dropTitle').textContent = 'Drop ' + pad(d);
       const done = S.me ? list.filter((b) => myScore(b)).length : 0;
       $('#mineN').textContent = done + '/' + list.length;
       $('#trackFill').style.transform = 'scaleX(' + (list.length ? done / list.length : 0) + ')';
-      $('#drops').hidden = drops().length < 2;
-      $('#drops').innerHTML = drops().map((x) => `<button type="button" aria-pressed="${x === d}" data-drop="${x}">${pad(x)}</button>`).join('');
     }
 
     // 로스터리 분류: 이 DROP에 로스터리가 둘 이상일 때만 칩을 보여줌
@@ -744,6 +759,8 @@
     const shown = S.roaster === 'all' ? list : list.filter((b) => roasterOf(b) === S.roaster);
 
     renderDrop(shown);
+    renderTodo();
+    renderPast();
     renderHall();
     renderSheet();
   }
@@ -760,17 +777,48 @@
       el.innerHTML = '<div class="empty"><span>첫 DROP을 기다리는 중이에요.</span><span>원두가 도착하면 여기에 올라와요.</span></div>';
       return;
     }
-    el.innerHTML = list.map((b) => {
-      const mine = myScore(b);
-      const open = S.open === b.id;
-      const status = !S.me ? '보기' : mine ? ICON.star + mine : '평가하기';
-      return `<article class="bean" id="b-${b.id}">
-        <button type="button" class="row" aria-haspopup="dialog" aria-expanded="${open}" data-open="${b.id}">
+    el.innerHTML = list.map((b) => rowHTML(b)).join('');
+  }
+  function rowHTML(b, withDrop) {
+    const mine = myScore(b);
+    const status = !S.me ? '보기' : mine ? ICON.star + mine : '평가하기';
+    const meta = [withDrop ? 'DROP ' + pad(b.drop) : '', metaOf(b)].filter(Boolean).join(' · ');
+    return `<article class="bean" id="${withDrop ? 't' : 'b'}-${b.id}">
+        <button type="button" class="row" aria-haspopup="dialog" aria-expanded="${S.open === b.id}" data-open="${b.id}">
           <span class="no mono">${esc(b.no)}</span>
-          <span class="tx"><span class="nm" translate="no">${esc(b.name)}</span><span class="mt">${rtTag(b)}<span>${esc(metaOf(b))}</span></span></span>
+          <span class="tx"><span class="nm" translate="no">${esc(b.name)}</span><span class="mt">${rtTag(b)}<span>${esc(meta)}</span></span></span>
           <span class="st ${mine ? 'done' : ''}"${mine ? ` aria-label="내 점수 ${mine}점"` : ''}>${status}</span>
         </button>
       </article>`;
+  }
+  // 밀린 평가: 지난 DROP에서 내가 아직 평가 안 한 원두
+  function renderTodo() {
+    const latest = curDrop();
+    const todo = S.me && S.data ? beans().filter((b) => b.drop !== latest && !myScore(b)) : [];
+    $('#secTodo').hidden = !todo.length;
+    $('#todoN').textContent = todo.length ? todo.length + '개 남음' : '';
+    $('#viewTodo').innerHTML = todo.map((b) => rowHTML(b, true)).join('');
+  }
+  // 지난 DROP: DROP마다 접힌 한 줄, 누르면 원두 목록
+  function renderPast() {
+    const past = S.data ? drops().slice(1) : [];
+    $('#secPast').hidden = !past.length;
+    $('#viewPast').innerHTML = past.map((d) => {
+      const list = inDrop(d);
+      const arrived = list.map((b) => b.arrived).filter(Boolean).sort()[0];
+      const rated = list.filter((b) => Object.keys(b.ratings).length);
+      const avg = rated.length ? rated.reduce((t, b) => t + avgOf(b), 0) / rated.length : null;
+      const top = rated.slice().sort((x, y) => avgOf(y) - avgOf(x))[0];
+      const open = S.drop === d;
+      const sub = [arrived ? dayText(arrived) + ' 도착' : '', '원두 ' + list.length, avg != null ? '평균 ' + fmtNum.format(avg) : ''].filter(Boolean).join(' · ');
+      return `<div class="past-d">
+        <button type="button" class="past-h" aria-expanded="${open}" aria-controls="pd-${d}" data-past="${d}">
+          <span class="past-n mono">DROP ${pad(d)}</span>
+          <span class="past-s"><span>${esc(sub)}</span>${top ? `<span class="past-top" translate="no">최고 ${esc(top.name)}</span>` : ''}</span>
+          <span class="past-c" aria-hidden="true">${open ? '−' : '+'}</span>
+        </button>
+        ${open ? `<div class="past-b" id="pd-${d}">${list.map((b) => rowHTML(b)).join('')}</div>` : ''}
+      </div>`;
     }).join('');
   }
 
@@ -779,11 +827,12 @@
   const addDays = (iso, n) => { const d = new Date(iso + 'T12:00:00+09:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
   const today = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
   const REST = [7, 21];   // 필터 원두 맛보기 좋은 때: 로스팅 +7 ~ +21일
-  function bestOf(b) {   // 맛보기 좋은 때 한 줄 (로스팅 날짜를 알 때만)
+  function bestOf(b) {   // 맛보기 좋은 때 한 줄 (로스팅 날짜를 알 때만). 디개싱 일수는 노션 '디개싱(일)', 비우면 7일 · 그날부터 2주
     const ds = daysSince(b.roast);
     if (ds == null) return null;
-    if (ds < REST[0]) return { tone: 'wait', text: `로스팅 +${ds}일 · ${REST[0] - ds}일 뒤부터 맛보기 좋아요` };
-    if (ds <= REST[1]) return { tone: 'now', text: `로스팅 +${ds}일 · 지금 맛보기 좋은 때` };
+    const r0 = b.rest > 0 ? Math.round(b.rest) : REST[0], r1 = r0 + 14;
+    if (ds < r0) return { tone: 'wait', text: `로스팅 +${ds}일 · ${r0 - ds}일 뒤부터 맛보기 좋아요` };
+    if (ds <= r1) return { tone: 'now', text: `로스팅 +${ds}일 · 지금 맛보기 좋은 때` };
     return { tone: 'late', text: `로스팅 +${ds}일 · 늦기 전에 마셔 보세요` };
   }
   const VERDICT = ['', '아쉬워요', '그저 그래요', '괜찮아요', '좋아요', '최고예요'];
@@ -834,7 +883,7 @@
 
       <div class="tiles">${tiles.map(([k, v]) => `<div><span>${k}</span><b>${esc(v)}</b></div>`).join('')}</div>
 
-      ${facts.length || /^https:\/\//i.test(b.url || '') ? `<dl class="sh-facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}${/^https:\/\//i.test(b.url || '') ? `<div><dt></dt><dd><a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">상품 페이지 ${ICON.out}<span class="sr"> (새 창)</span></a></dd></div>` : ''}</dl>` : ''}
+      ${facts.length ? `<dl class="sh-facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : ''}
       ${b.procText || b.desc ? `<details class="story"><summary>로스터리 설명</summary>${[['가공 과정', b.procText], ['원두 이야기', b.desc]].filter((x) => x[1]).map(([h, x]) => `<h4>${h}</h4><p>${esc(x)}</p>`).join('')}</details>` : ''}
 
       <section class="rate-card" aria-label="내 평가">
@@ -936,7 +985,7 @@
     if (t.dataset.addsave) { addBean(); return; }
     if (t.dataset.addgo) { const id = t.dataset.addgo; S.add = null; history.replaceState(null, '', '#b-' + id); applyHash(); render(); return; }
     if (t.dataset.roaster) { S.roaster = t.dataset.roaster; S.open = null; render(); return; }
-    if (t.dataset.drop) { S.drop = Number(t.dataset.drop); S.open = null; S.roaster = 'all'; history.replaceState(null, '', '#d-' + S.drop); render(); return; }
+    if (t.dataset.past) { const d = Number(t.dataset.past); S.drop = S.drop === d ? null : d; history.replaceState(null, '', S.drop ? '#d-' + S.drop : location.pathname); render(); return; }
     if (t.dataset.close) { $('#sheet').close(); return; }
     if (t.dataset.felt != null && t.dataset.felt !== undefined && t.closest('#sheet')) {
       const b = beans().find((x) => x.id === S.open); if (!b) return;
