@@ -483,7 +483,7 @@
     msg: {},            // 원두별 저장 상태 { text, err }
     draft: {},          // 저장 전 감상 (다시 그려도 유지)
     felt: {},           // 저장 전 느낀 노트 [원두ID] = ['베르가못', …]
-    add: {},            // 직접 추가하는 노트 입력값
+    addNote: {},        // 직접 추가하는 노트 입력값 (S.add는 '레이더에서 담기' 상태라 이름을 따로 씀)
     busy: {}            // 원두별 저장 중
   };
   if (S.me && ['IB', 'HJ', 'KC'].indexOf(S.me) < 0) S.me = null;
@@ -605,7 +605,7 @@
   function olderDrops(a) { const out = []; for (let n = a.latest - 1; n >= 1; n--) out.push(n); return out; }
 
   function renderAdd() {
-    const el = $('#addBox'), a = S.add;
+    const el = $('#addBox'), a = S.add && S.add.url ? S.add : null;   // 담을 상품 주소가 있을 때만 (빈 상태로 뜨지 않게)
     el.hidden = !a;
     if (!a) { el.innerHTML = ''; return; }
     const it = a.item;
@@ -850,7 +850,7 @@
               <p class="rc-q">${mine >= 4 ? '어떤 노트가 좋았나요?' : '느낀 노트를 골라 주세요'}</p>
               <div class="felt" role="group" aria-label="느낀 노트">
                 ${pool.filter((x) => !isIssue(x)).map((n) => `<button type="button" aria-pressed="${felt.indexOf(n) >= 0}" data-felt="${esc(n)}">${esc(n)}</button>`).join('')}
-                <span class="felt-add"><input type="text" id="fa-${b.id}" maxlength="20" autocomplete="off" enterkeyhint="done" placeholder="+ 직접 추가" value="${esc(S.add[b.id] || '')}" aria-label="느낀 노트 직접 추가"></span>
+                <span class="felt-add"><input type="text" id="fa-${b.id}" maxlength="20" autocomplete="off" enterkeyhint="done" placeholder="+ 직접 추가" value="${esc(S.addNote[b.id] || '')}" aria-label="느낀 노트 직접 추가"></span>
               </div>
             </div>
             ${mine <= 3 ? `
@@ -960,7 +960,7 @@
   document.addEventListener('input', (ev) => {
     const id = ev.target.id || '';
     if (id.indexOf('n-') === 0) { S.draft[id.slice(2)] = ev.target.value; const btn = document.querySelector('[data-note="' + id.slice(2) + '"]'); const b = beans().find((x) => x.id === id.slice(2)); if (btn && b) { const d = dirty(b); btn.setAttribute('aria-disabled', String(!!S.busy[b.id] || !d)); btn.textContent = d ? '평가 저장' : '저장됨'; } }
-    if (id.indexOf('fa-') === 0) S.add[id.slice(3)] = ev.target.value;
+    if (id.indexOf('fa-') === 0) S.addNote[id.slice(3)] = ev.target.value;
   });
   $('#sheet').addEventListener('close', () => {
     if (!S.open) return;
@@ -974,7 +974,7 @@
       ev.preventDefault();
       const id = ev.target.id.slice(3), v = ev.target.value.replace(/·/g, ' ').trim().slice(0, 20);
       const b = beans().find((x) => x.id === id);
-      if (b && v) { const f = feltOf(b).slice(); if (f.indexOf(v) < 0) f.push(v); S.felt[id] = f; S.add[id] = ''; render(); const el = $('#fa-' + id); if (el) el.focus(); }
+      if (b && v) { const f = feltOf(b).slice(); if (f.indexOf(v) < 0) f.push(v); S.felt[id] = f; S.addNote[id] = ''; render(); const el = $('#fa-' + id); if (el) el.focus(); }
       return;
     }
     if (ev.key === 'Enter' && ev.target.tagName === 'INPUT' && ev.target.id && ev.target.id.indexOf('n-') === 0) {
