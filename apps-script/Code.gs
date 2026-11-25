@@ -142,7 +142,8 @@ function fillOne_(pg, all, radar) {
 
   // 레이더에 있는 원두: 자세한 정보 칸은 비어 있는 것만 채움 (예전에 담은 원두도 다음 채우기 때 채워짐)
   if (hit) {
-    const more = { '생산자': hit.producer, '농장': hit.farm, '고도': hit.altitude, '수확': hit.harvest, '용량': hit.size, '가공 과정': hit.procText, '원두 설명': hit.desc };
+    // 레이더의 producer는 카드 제목(원두명과 겹침), farm(작은 줄)이 실제 생산자·농장
+    const more = { '생산자': hit.farm || hit.producer, '고도': hit.altitude, '수확': hit.harvest, '용량': hit.size, '가공 과정': hit.procText, '원두 설명': hit.desc };
     Object.keys(more).forEach((k) => { if (more[k] && !P.text(pr[k])) props[k] = W.text(more[k]); });
   }
 
